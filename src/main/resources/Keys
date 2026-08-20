@@ -1,0 +1,8 @@
+JWT_SECRET=your_super_secret_key_that_is_at_least_32_characters_long_12345
+DB_PASSWORD=test
+#create from google studio api keys
+GEMINI_API_KEY=AQ.Ab8RN6LMNw2rlGUXvpStjeBRNk456zH4wNZoZ6SlTAZZ64lsSw
+#create from groq cloud api keys
+GROQ_API_KEY=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
+MAIL_USERNAME=TEST_MAIL_USERNAME
+MAIL_PASSWORD=TEST_MAIL_PASSWORD
