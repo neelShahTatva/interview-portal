@@ -73,6 +73,7 @@ public class QuestionSelectionServiceImpl
                     3. Return ONLY valid JSON.
                     4. Do NOT include explanations.
                     5. Select questions most relevant to the candidate designation.
+                    6. Total number of questions SHOULD BE 3.
 
                     Return JSON in exactly this format:
 
