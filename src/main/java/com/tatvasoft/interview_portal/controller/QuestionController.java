@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
@@ -23,6 +24,9 @@ import java.util.List;
 public class QuestionController {
 
     private final QuestionService questionService;
+
+    @Value("${bulk.question.template.path}")
+private String bulkQuestionTemplatePath;
 
     public QuestionController(QuestionService questionService) {
         this.questionService = questionService;
@@ -123,8 +127,7 @@ public class QuestionController {
 
     @GetMapping("/download-template")
     public ResponseEntity<Resource> downloadUploadTemplate() {
-        Resource resource = new ClassPathResource("static/templates/Bulk_Questions_Template.xlsx");
-
+       Resource resource = new ClassPathResource(bulkQuestionTemplatePath);
         if (!resource.exists()) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,

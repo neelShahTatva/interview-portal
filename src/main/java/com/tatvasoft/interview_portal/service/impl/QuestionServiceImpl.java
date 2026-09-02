@@ -3,6 +3,9 @@ package com.tatvasoft.interview_portal.service.impl;
 import com.tatvasoft.interview_portal.ai.service.QuestionSelectionService;
 import com.tatvasoft.interview_portal.dto.*;
 import com.tatvasoft.interview_portal.entity.*;
+import com.tatvasoft.interview_portal.enums.QuestionDesignationType;
+import com.tatvasoft.interview_portal.enums.QuestionDifficultyLevel;
+import com.tatvasoft.interview_portal.enums.QuestionUploadHeader;
 import com.tatvasoft.interview_portal.exception.BulkUploadValidationException;
 import com.tatvasoft.interview_portal.repository.*;
 import com.tatvasoft.interview_portal.service.QuestionService;
@@ -13,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -34,9 +38,6 @@ public class QuestionServiceImpl implements QuestionService {
     private final CandidateRepository candidateRepository;
 
     private final DataFormatter formatter = new DataFormatter();
-
-    private static final Set<String> VALID_DESIGNATIONS = Set.of("TSE", "ASE", "SE", "SSE", "TL", "STL", "APM", "PM", "PPM");
-    private static final Set<String> VALID_DIFFICULTIES = Set.of("EASY", "MEDIUM", "HARD");
 
     @Override
     public List<CategoryResponse> getAllCategories() {
@@ -96,7 +97,7 @@ public class QuestionServiceImpl implements QuestionService {
             q.setDesignations(designations);
         }
 
-        Question saved = questionRepository.saveAndFlush(q);
+        Question saved = questionRepository.save(q);
         return mapToQuestionResponse(saved);
     }
     
@@ -227,10 +228,7 @@ public class QuestionServiceImpl implements QuestionService {
                 throw new BulkUploadValidationException("Excel file is missing required columns: Title, Description, Difficulty, Estimated Time, Is Active, Categories, Designations, Java Solution.");
             }
 
-            String[] requiredHeaders = {
-                    "Title", "Description", "Difficulty", "Estimated Time", "Is Active",
-                    "Categories", "Designations", "Java Solution"
-            };
+            String[] requiredHeaders = QuestionUploadHeader.getRequiredHeaders();
 
             // Build header -> column index map
 
@@ -410,7 +408,7 @@ public class QuestionServiceImpl implements QuestionService {
                 }
 
                 String javaValue = getCellValue(row.getCell(solutionIndex));
-                if (!javaValue.isBlank()) {
+                if (StringUtils.isNotBlank(javaValue)   ) {
                     QuestionSolution solution = new QuestionSolution();
                     solution.setLanguage("JAVA");
                     solution.setSolutionCode(javaValue);
@@ -473,16 +471,11 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         String normalized = designation.trim().toUpperCase(Locale.ROOT);
-        return VALID_DESIGNATIONS.contains(normalized);
+        return QuestionDesignationType.isValid(designation);
     }
 
     private boolean isValidDifficulty(String difficulty) {
-        if (difficulty == null) {
-            return false;
-        }
-
-        String normalized = difficulty.trim().toUpperCase(Locale.ROOT);
-        return VALID_DIFFICULTIES.contains(normalized);
+        return QuestionDifficultyLevel.isValid(difficulty);
     }
 
     private boolean headersMatch(String requiredHeader, String actualHeader) {
@@ -516,13 +509,10 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     private void validateRequiredHeaders(Map<String, Integer> columnIndexByHeader) {
-        String[] requiredHeaders = {
-                "Title", "Description", "Difficulty", "Estimated Time", "Is Active",
-                "Categories", "Designations", "Java Solution"
-        };
+        String[] requiredHeaders = QuestionUploadHeader.getRequiredHeaders();
 
         List<String> missingHeaders = Arrays.stream(requiredHeaders)
-                .map(this::normalizeHeader)
+                .map(QuestionUploadHeader::normalizeHeader)
                 .filter(header -> !columnIndexByHeader.containsKey(header))
                 .map(header -> switch (header) {
                         case "title" -> "Title";
@@ -545,13 +535,10 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     private List<String> getMissingHeaders(Map<String, Integer> columnIndexByHeader) {
-        String[] requiredHeaders = {
-                "Title", "Description", "Difficulty", "Estimated Time", "Is Active",
-                "Categories", "Designations", "Java Solution"
-        };
+        String[] requiredHeaders = QuestionUploadHeader.getRequiredHeaders();
 
         return Arrays.stream(requiredHeaders)
-                .map(this::normalizeHeader)
+                .map(QuestionUploadHeader::normalizeHeader)
                 .filter(header -> !columnIndexByHeader.containsKey(header))
                 .map(header -> switch (header) {
                     case "title" -> "Title";
@@ -578,10 +565,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     private Map<String, Integer> buildFuzzyHeaderMap(Map<String, Integer> rawHeaderIndex) {
-        String[] requiredHeaders = {
-                "Title", "Description", "Difficulty", "Estimated Time", "Is Active",
-                "Categories", "Designations", "Java Solution"
-        };
+        String[] requiredHeaders = QuestionUploadHeader.getRequiredHeaders();
 
         Map<String, Integer> result = new HashMap<>();
 
