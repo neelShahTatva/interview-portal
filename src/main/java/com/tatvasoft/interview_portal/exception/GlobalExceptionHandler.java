@@ -37,9 +37,32 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(BulkUploadValidationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleBulkUploadValidation(BulkUploadValidationException ex) {
+        ApiResponse<Object> response = new ApiResponse<>(
+                400,
+                false,
+                splitValidationMessages(ex.getMessage()),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGeneric(Exception ex) {
         ApiResponse<Object> response = new ApiResponse<>(500, false, List.of(ex.getMessage()), null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    private List<String> splitValidationMessages(String message) {
+        if (message == null || message.isBlank()) {
+            return List.of();
+        }
+
+        String[] messages = message.split("\\s*\\|\\s*");
+        return java.util.Arrays.stream(messages)
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .toList();
     }
 }

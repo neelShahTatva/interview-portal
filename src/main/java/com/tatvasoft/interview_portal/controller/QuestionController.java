@@ -6,9 +6,15 @@ import com.tatvasoft.interview_portal.dto.QuestionRequest;
 import com.tatvasoft.interview_portal.dto.QuestionResponse;
 import com.tatvasoft.interview_portal.entity.Question;
 import com.tatvasoft.interview_portal.service.QuestionService;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -113,6 +119,26 @@ public class QuestionController {
                         uploadedQuestions
                 )
         );
+    }
+
+    @GetMapping("/download-template")
+    public ResponseEntity<Resource> downloadUploadTemplate() {
+        Resource resource = new ClassPathResource("static/templates/Bulk_Questions_Template.xlsx");
+
+        if (!resource.exists()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Bulk upload template not found."
+            );
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"Bulk_Questions_Template.xlsx\"")
+                .body(resource);
     }
 
     @GetMapping("/category")
