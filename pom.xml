@@ -99,6 +99,12 @@
             <version>5.2.5</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.18.0</version>
+        </dependency>
+
         <!-- Apache POI OOXML for modern Excel handling (.xlsx) -->
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -106,6 +112,8 @@
             <version>5.2.5</version>
         </dependency>
     </dependencies>
+
+
 
     <build>
         <plugins>
