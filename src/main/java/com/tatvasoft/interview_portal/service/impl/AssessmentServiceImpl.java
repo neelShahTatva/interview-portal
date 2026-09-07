@@ -7,12 +7,19 @@ import com.tatvasoft.interview_portal.repository.*;
 import com.tatvasoft.interview_portal.service.AssessmentService;
 import com.tatvasoft.interview_portal.util.SecurityUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Primary;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.Duration;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
+@Primary
 public class AssessmentServiceImpl implements AssessmentService {
 
     private final AssessmentRepository repository;
@@ -37,13 +44,105 @@ public class AssessmentServiceImpl implements AssessmentService {
 
         User currentUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Logged in user not found"));
-        if (repository.existsByCandidateIdAndIsActiveTrue(
-                request.getCandidateId())) {
+                // Find active assessments for the candidate and decide eligibility
+    List<Assessment> activeForCandidate =
+        repository.findAllByCandidateId(request.getCandidateId())
+                .stream()
+                .filter(Assessment::getIsActive)
+                .toList();
 
-            throw new RuntimeException(
-                    "Assessment already exists for this candidate"
+if (!activeForCandidate.isEmpty()) {
+
+    boolean hasPending = activeForCandidate.stream()
+            .anyMatch(a -> AssessmentStatus.PENDING.name().equals(a.getStatus()));
+
+    if (hasPending) {
+        throw new RuntimeException(
+                "Candidate already has a pending assessment."
+        );
+    }
+
+    boolean hasInProgress = activeForCandidate.stream()
+            .anyMatch(a -> AssessmentStatus.IN_PROGRESS.name().equals(a.getStatus()));
+
+    if (hasInProgress) {
+        throw new RuntimeException(
+                "Candidate already has an assessment in progress."
+        );
+    }
+
+    Assessment latestCompleted = activeForCandidate.stream()
+            .filter(a -> AssessmentStatus.COMPLETED.name().equals(a.getStatus()))
+            .filter(a -> a.getCompletedAt() != null)
+            .max(Comparator.comparing(Assessment::getCompletedAt))
+            .orElse(null);
+
+    if (latestCompleted != null) {
+
+        LocalDateTime eligibleDate =
+                latestCompleted.getCompletedAt().plusMonths(6);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isBefore(eligibleDate)) {
+
+            Period period = Period.between(
+                    now.toLocalDate(),
+                    eligibleDate.toLocalDate()
             );
+
+            int months = period.getMonths();
+            int days = period.getDays();
+
+            StringBuilder message = new StringBuilder(
+                    "Candidate is not eligible for a new assessment. You will be eligible after "
+            );
+
+                        if (months > 0) {
+                                message.append(months)
+                                                .append(months == 1 ? " month" : " months");
+                        }
+
+                        if (days > 0) {
+                                if (months > 0) {
+                                        message.append(" and ");
+                                }
+
+                                message.append(days)
+                                                .append(days == 1 ? " day" : " days");
+                        }
+
+                        // If both months and days are zero (same target date but later time),
+                        // show hours/minutes remaining or the exact eligible date/time.
+                        if (months == 0 && days == 0) {
+                                long hours = ChronoUnit.HOURS.between(now, eligibleDate);
+                                long minutes = ChronoUnit.MINUTES.between(now.plusHours(hours), eligibleDate);
+
+                                if (hours > 0) {
+                                        if (months > 0 || days > 0) message.append(" and ");
+                                        message.append(hours).append(hours == 1 ? " hour" : " hours");
+
+                                        if (minutes > 0) {
+                                                message.append(" and ").append(minutes).append(minutes == 1 ? " minute" : " minutes");
+                                        }
+                                } else if (minutes > 0) {
+                                        if (months > 0 || days > 0) message.append(" and ");
+                                        message.append(minutes).append(minutes == 1 ? " minute" : " minutes");
+                                } else {
+                                        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                                        if (months > 0 || days > 0) message.append(" ");
+                                        message.append(eligibleDate.format(fmt));
+                                }
+                        }
+
+                        message.append(".");
+
+            throw new RuntimeException(message.toString());
         }
+    }
+}
+
+                      
         Assessment assessment = new Assessment();
 
         assessment.setCandidateId(request.getCandidateId());
@@ -253,11 +352,17 @@ public class AssessmentServiceImpl implements AssessmentService {
     @Override
     public void changeStatus(Long id, String status) {
 
-        Assessment assessment = repository.findById(id).orElseThrow(() -> new RuntimeException("Assessment not found"));
+        Assessment assessment = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Assessment not found"));
+
+        LocalDateTime now = LocalDateTime.now();
 
         assessment.setStatus(status);
+        assessment.setUpdatedAt(now);
 
-        assessment.setUpdatedAt(LocalDateTime.now());
+        if (AssessmentStatus.COMPLETED.name().equalsIgnoreCase(status)) {
+            assessment.setCompletedAt(now);
+        }
 
         repository.save(assessment);
     }

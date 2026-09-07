@@ -139,6 +139,8 @@ public class MultiQuestionEvaluationServiceImpl implements MultiQuestionEvaluati
 
         assessment.setStatus(AssessmentStatus.COMPLETED.toString());
         assessment.setCompletedAt(LocalDateTime.now());
+        // Keep assessment active for the retention period (6 months); a scheduled job will archive it later
+        assessment.setIsActive(true);
         assessment.setUpdatedAt(LocalDateTime.now());
         assessment.setUpdatedBy(userId);
         assessmentRepository.save(assessment);
