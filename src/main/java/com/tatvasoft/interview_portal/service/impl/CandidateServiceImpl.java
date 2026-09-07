@@ -124,7 +124,7 @@ public class CandidateServiceImpl implements CandidateService {
     @Override
     public CandidateEvaluationResponse getCandidateEvaluation(Long candidateId) {
 
-        Assessment assessment = assessmentRepository.findByCandidateIdAndIsActiveTrue(candidateId).orElseThrow();
+        Assessment assessment = assessmentRepository.findByCandidateIdAndIsActiveTrue(candidateId).orElseThrow(() -> new ResourceNotFoundException("Active assessment not found for candidate"));
 
         CandidateEvaluationResponse response = new CandidateEvaluationResponse();
 
