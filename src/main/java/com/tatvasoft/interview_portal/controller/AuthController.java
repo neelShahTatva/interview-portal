@@ -6,6 +6,7 @@ import com.tatvasoft.interview_portal.service.AuthService;
 import com.tatvasoft.interview_portal.service.EmailService;
 import com.tatvasoft.interview_portal.service.UserService;
 import com.tatvasoft.interview_portal.util.JwtUtil;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +34,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse loginResponse = authService.login(request);
         return ResponseEntity.ok(new ApiResponse<>(200, true, null, loginResponse));
     }
@@ -45,7 +46,7 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         authService.processForgotPassword(request);
         return ResponseEntity.ok(new ApiResponse<>(200, true, null, "Reset password link sent on email"));
     }
