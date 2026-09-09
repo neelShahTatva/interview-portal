@@ -7,7 +7,6 @@ import com.tatvasoft.interview_portal.repository.*;
 import com.tatvasoft.interview_portal.service.AssessmentService;
 import com.tatvasoft.interview_portal.util.SecurityUtil;
 import org.springframework.stereotype.Service;
-import org.springframework.context.annotation.Primary;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -19,7 +18,6 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
-@Primary
 public class AssessmentServiceImpl implements AssessmentService {
 
     private final AssessmentRepository repository;
