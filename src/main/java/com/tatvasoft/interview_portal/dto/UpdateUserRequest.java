@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UserRequest {
+public class UpdateUserRequest {
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     @Pattern(
@@ -15,14 +15,6 @@ public class UserRequest {
             message = "Username can contain only letters, numbers, and spaces"
     )
     private String username;
-
-    @NotBlank(message = "Password is required")
-    @Size(min = 8, max = 20, message = "Password must be between 8 and 20 characters")
-    @Pattern(
-            regexp = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).+$",
-            message = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character"
-    )
-    private String password;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Please provide a valid email address")

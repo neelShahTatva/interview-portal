@@ -7,12 +7,29 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AssessmentException.class)
+
+    public ResponseEntity<Map<String, Object>> handleAssessmentException(AssessmentException ex) {
+
+        Map<String, Object> body = new HashMap<>();
+
+        body.put("status", HttpStatus.CONFLICT.value());
+
+        body.put("errorCode", ex.getErrorCode());
+
+        body.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+
+    }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ApiResponse<Object>> handleUserAlreadyExists(UserAlreadyExistsException ex) {
