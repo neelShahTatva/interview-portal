@@ -123,7 +123,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse updateUser(
             Long id,
-            UserRequest request) {
+            UpdateUserRequest request) {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() ->
@@ -141,18 +141,6 @@ public class UserServiceImpl implements UserService {
                 new ResourceNotFoundException("Role not found"));
 
         user.setRole(role);
-
-        // optional password update
-
-        if (request.getPassword() != null
-                && !request.getPassword().isBlank()) {
-
-            user.setPassword(
-                    passwordEncoder.encode(
-                            request.getPassword()
-                    )
-            );
-        }
 
         userRepository.save(user);
 

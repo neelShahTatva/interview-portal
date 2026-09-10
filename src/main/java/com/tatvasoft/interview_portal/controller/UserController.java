@@ -2,6 +2,7 @@ package com.tatvasoft.interview_portal.controller;
 
 import com.tatvasoft.interview_portal.dto.*;
 import com.tatvasoft.interview_portal.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<UserResponse>> createUser(
-            @RequestBody UserRequest request) {
+            @Valid @RequestBody UserRequest request) {
 
         UserResponse user = userService.createUser(request);
 
@@ -58,7 +59,7 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(
             @PathVariable Long id,
-            @RequestBody UserRequest request) {
+            @Valid @RequestBody UpdateUserRequest request) {
 
         UserResponse user =
                 userService.updateUser(id, request);
