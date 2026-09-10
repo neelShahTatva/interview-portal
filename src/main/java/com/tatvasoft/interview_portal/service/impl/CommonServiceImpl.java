@@ -3,7 +3,7 @@ package com.tatvasoft.interview_portal.service.impl;
 import com.tatvasoft.interview_portal.dto.RoleResponseDto;
 import com.tatvasoft.interview_portal.entity.Role;
 import com.tatvasoft.interview_portal.repository.RoleRepository;
-import com.tatvasoft.interview_portal.service.RolesService;
+import com.tatvasoft.interview_portal.service.CommonService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class RolesServiceImpl implements RolesService {
+public class CommonServiceImpl implements CommonService {
 
     private final RoleRepository roleRepository;
 

@@ -4,6 +4,6 @@ import com.tatvasoft.interview_portal.dto.RoleResponseDto;
 
 import java.util.List;
 
-public interface RolesService {
+public interface CommonService {
     List<RoleResponseDto> getAllRoles();
 }
