@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -181,7 +180,6 @@ public class UserServiceImpl implements UserService {
         user.setRole(role);
 
         // optional password update
-
         if (request.getPassword() != null
                 && !request.getPassword().isBlank()) {
 
@@ -191,6 +189,9 @@ public class UserServiceImpl implements UserService {
                     )
             );
         }
+
+        user.setUpdatedAt(LocalDateTime.now());
+        user.setUpdatedBy(getCurrentAuthenticatedUser().getId());
 
         userRepository.save(user);
 
@@ -262,7 +263,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("No file provided. Please select an image to upload.");
         }
 
-        // file size ≤ 5 MB 
+        // file size ≤ 5 MB
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new IllegalArgumentException(
                     "File size exceeds the 5 MB limit. Please upload a smaller image.");
@@ -286,19 +287,21 @@ public class UserServiceImpl implements UserService {
                     "Invalid file extension. Allowed: jpg, jpeg, png, webp.");
         }
 
-        // magic bytes
+        // Read bytes once — avoids double-stream consumption issue
+        byte[] fileBytes;
         try {
-            byte[] header = new byte[4];
-            int read = file.getInputStream().read(header);
-            if (read < 4 || !isValidImageSignature(header, extension)) {
-                throw new IllegalArgumentException(
-                        "File content does not match its declared type. Please upload a real image.");
-            }
+            fileBytes = file.getBytes();
         } catch (IOException e) {
             throw new IllegalArgumentException("Could not read file content. Please try again.");
         }
 
-        // Resolve current user 
+        // magic bytes validation
+        if (fileBytes.length < 4 || !isValidImageSignature(java.util.Arrays.copyOf(fileBytes, 4), extension)) {
+            throw new IllegalArgumentException(
+                    "File content does not match its declared type. Please upload a real image.");
+        }
+
+        // Resolve current user
         User user = getCurrentAuthenticatedUser();
 
         // Save file to disk
@@ -306,16 +309,16 @@ public class UserServiceImpl implements UserService {
             Path uploadPath = Paths.get(uploadDir);
             Files.createDirectories(uploadPath);
 
-
             // Filename format: {yyyyMMdd_HHmmss}_{uuid6}.{ext}
             String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
             String filename = dateStr + "_" + UUID.randomUUID().toString().substring(0, 6) + "." + extension;
             Path filePath = uploadPath.resolve(filename);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            Files.write(filePath, fileBytes);
 
-            // Persist only filename to DB 
+            // Persist only filename to DB
             user.setProfilePicture(filename);
             user.setUpdatedAt(LocalDateTime.now());
+            user.setUpdatedBy(user.getId());
             userRepository.save(user);
 
             return filename;

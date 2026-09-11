@@ -110,12 +110,7 @@ public class UserController {
     @PostMapping(value = "/profile/picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<String>> uploadProfilePicture(
             @RequestParam("file") MultipartFile file) {
-        try {
-            String url = userService.uploadProfilePicture(file);
-            return ResponseEntity.ok(new ApiResponse<>(200, true, null, url));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, false, List.of(e.getMessage()), null));
-        }
+        String filename = userService.uploadProfilePicture(file);
+        return ResponseEntity.ok(new ApiResponse<>(200, true, null, filename));
     }
 }
