@@ -307,9 +307,9 @@ public class UserServiceImpl implements UserService {
             Files.createDirectories(uploadPath);
 
 
-            // Filename format: user_{userId}_{yyyyMMdd_HHmmss}_{uuid6}.{ext}
+            // Filename format: {yyyyMMdd_HHmmss}_{uuid6}.{ext}
             String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-            String filename = "user_" + user.getId() + "_" + dateStr + "_" + UUID.randomUUID().toString().substring(0, 6) + "." + extension;
+            String filename = dateStr + "_" + UUID.randomUUID().toString().substring(0, 6) + "." + extension;
             Path filePath = uploadPath.resolve(filename);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
