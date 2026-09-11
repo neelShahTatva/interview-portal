@@ -41,4 +41,7 @@ public class User {
 
     @Column(name = "reset_token_expiry")
     private LocalDateTime resetTokenExpiry;
+
+    @Column(name = "profile_picture")
+    private String profilePicture;
 }
