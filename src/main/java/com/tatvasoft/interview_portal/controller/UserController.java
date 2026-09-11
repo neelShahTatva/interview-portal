@@ -22,7 +22,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<UserResponse>> createUser(
-            @RequestBody UserRequest request) {
+            @Valid @RequestBody UserRequest request) {
 
         UserResponse user = userService.createUser(request);
 
@@ -61,7 +61,7 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(
             @PathVariable Long id,
-            @RequestBody UserRequest request) {
+            @Valid @RequestBody UpdateUserRequest request) {
 
         UserResponse user =
                 userService.updateUser(id, request);
