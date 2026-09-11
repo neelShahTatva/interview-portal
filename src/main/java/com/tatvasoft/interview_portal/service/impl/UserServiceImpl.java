@@ -62,7 +62,7 @@ public class UserServiceImpl implements UserService {
         Long userId = SecurityUtil.getCurrentUserId();
         if (userId != null) {
             return userRepository.findById(userId)
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id"));
         }
         String currentUsername = SecurityUtil.getCurrentUsername();
         if (currentUsername != null) {
@@ -107,14 +107,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id"));
         return mapToResponse(user);
     }
 
     @Override
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("User not found with id: " + id);
+            throw new ResourceNotFoundException("User not found with id");
         }
         userRepository.deleteById(id);
     }
