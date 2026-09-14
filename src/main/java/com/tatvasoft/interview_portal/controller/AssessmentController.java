@@ -5,6 +5,7 @@ import com.tatvasoft.interview_portal.dto.AssessmentRequest;
 import com.tatvasoft.interview_portal.dto.AssessmentResponse;
 import com.tatvasoft.interview_portal.dto.CandidateResponse;
 import com.tatvasoft.interview_portal.service.AssessmentService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +23,7 @@ public class AssessmentController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<AssessmentResponse>> create(
-            @RequestBody AssessmentRequest request) {
+            @Valid @RequestBody AssessmentRequest request) {
 
         return ResponseEntity.ok(
                 new ApiResponse<>(

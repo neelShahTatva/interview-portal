@@ -11,8 +11,8 @@ public class UserRequest {
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     @Pattern(
-            regexp = "^(?=.*[a-zA-Z])[a-zA-Z0-9]+(?: [a-zA-Z0-9]+)*$",
-            message = "Username can contain only letters, numbers, and spaces"
+            regexp = "^(?=.*[a-zA-Z])[a-zA-Z0-9]+(?:[._][a-zA-Z0-9]+)*$",
+            message = "Username must contain at least one letter and may contain only letters, numbers, dots (.) and underscores (_)"
     )
     private String username;
 
