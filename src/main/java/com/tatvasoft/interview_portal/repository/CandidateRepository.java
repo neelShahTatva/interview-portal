@@ -9,4 +9,6 @@ public interface CandidateRepository
 
     boolean existsByEmail(String email);
 
+    boolean existsByEmailAndIdNot(String email, Long id);
+
 }

@@ -90,6 +90,10 @@ public class CandidateServiceImpl implements CandidateService {
 
         Candidate candidate = candidateRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Candidate not found"));
 
+        if (candidateRepository.existsByEmailAndIdNot(request.getEmail(), id)) {
+            throw new RuntimeException("Candidate email already exists");
+        }
+
         String username = SecurityUtil.getCurrentUsername();
 
         User currentUser = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Logged in user not found"));

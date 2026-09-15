@@ -2,7 +2,10 @@ package com.tatvasoft.interview_portal.ai.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tatvasoft.interview_portal.ai.service.AiSolutionGenerationService;
+import com.tatvasoft.interview_portal.constant.GeminiConstants;
 import com.tatvasoft.interview_portal.entity.QuestionSolution;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -43,31 +46,21 @@ public class GeminiSolutionGenerationServiceImpl
                         .getDetails();
         try {
 
-            String prompt = """
-                    Generate production-ready Java solution.
-                    Return ONLY raw Java code.
-                    Question Title:
-                    %s
-                    Question Description:
-                    %s
-                    """
+            String prompt = GeminiConstants.SOLUTION_GENERATION_USER_PROMPT_TEMPLATE
                     .formatted(title, description);
 
-            String requestBody = """
-                    {
-                      "contents": [{
-                        "parts": [{
-                          "text": "%s"
-                        }]
-                      }]
-                    }
-                    """
-                    .formatted(
-                            prompt
-                                    .replace("\\", "\\\\")
-                                    .replace("\"", "\\\"")
-                                    .replace("\n", "\\n")
-                    );
+            ObjectNode root = objectMapper.createObjectNode();
+
+            ObjectNode systemInstructionNode = root.putObject("system_instruction");
+            ArrayNode sysParts = systemInstructionNode.putArray("parts");
+            sysParts.addObject().put("text", GeminiConstants.SOLUTION_GENERATION_SYSTEM_INSTRUCTION);
+
+            ArrayNode contents = root.putArray("contents");
+            ObjectNode content = contents.addObject();
+            ArrayNode parts = content.putArray("parts");
+            parts.addObject().put("text", prompt);
+
+            String requestBody = objectMapper.writeValueAsString(root);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -82,11 +75,11 @@ public class GeminiSolutionGenerationServiceImpl
                             String.class
                     );
 
-            JsonNode root =
+            JsonNode responseRoot =
                     objectMapper.readTree(response.getBody());
 
             String generatedCode =
-                    root.path("candidates")
+                    responseRoot.path("candidates")
                             .get(0)
                             .path("content")
                             .path("parts")
