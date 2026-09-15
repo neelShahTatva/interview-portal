@@ -1,16 +1,24 @@
 package com.tatvasoft.interview_portal.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-public class UserResponse {
+@NoArgsConstructor
+@Builder
+public class UserProfileResponse {
     private Long id;
     private String username;
     private String email;
     private Long roleId;
+    private String roleName;
     private Boolean isActive;
     private LocalDateTime createdAt;
-    private String profilePicture;
+    private String profilePictureUrl;
+    private String token;
 }

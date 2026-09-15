@@ -50,6 +50,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
+    // Handles invalid file upload arguments (size, type, extension, magic bytes)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Object>> handleIllegalArgument(IllegalArgumentException ex) {
+        ApiResponse<Object> response = new ApiResponse<>(400, false, List.of(ex.getMessage()), null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
     // Handles expired or invalid tokens
     @ExceptionHandler(TokenValidationException.class)
     public ResponseEntity<ApiResponse<Object>> handleTokenValidation(TokenValidationException ex) {
