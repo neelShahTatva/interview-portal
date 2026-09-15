@@ -2,21 +2,19 @@ package com.tatvasoft.interview_portal.util;
 
 import com.tatvasoft.interview_portal.enums.FileContentType;
 import com.tatvasoft.interview_portal.enums.FileExtension;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Arrays;
 
-public final class FileValidationUtil {
+@Component
+public class FileValidationUtil {
 
     private static final long MAX_PROFILE_PICTURE_SIZE =
             5 * 1024 * 1024; // 5 MB
 
-    private FileValidationUtil() {
-        // Utility class
-    }
-
-    public static String validateProfilePicture(
+    public String validateProfilePicture(
             MultipartFile file) {
 
         validateFilePresent(file);
@@ -26,25 +24,30 @@ public final class FileValidationUtil {
         String extension =
                 validateExtension(file);
 
-        validateFileContent(file, extension);
+        validateFileContent(
+                file,
+                extension
+        );
 
         return extension;
     }
 
-    private static void validateFilePresent(
+    private void validateFilePresent(
             MultipartFile file) {
 
         if (file == null || file.isEmpty()) {
+
             throw new IllegalArgumentException(
                     "No file provided. Please select an image to upload."
             );
         }
     }
 
-    private static void validateFileSize(
+    private void validateFileSize(
             MultipartFile file) {
 
         if (file.getSize() > MAX_PROFILE_PICTURE_SIZE) {
+
             throw new IllegalArgumentException(
                     "File size exceeds the 5 MB limit. "
                             + "Please upload a smaller image."
@@ -52,12 +55,14 @@ public final class FileValidationUtil {
         }
     }
 
-    private static void validateContentType(
+    private void validateContentType(
             MultipartFile file) {
 
-        String contentType = file.getContentType();
+        String contentType =
+                file.getContentType();
 
         if (!FileContentType.isValid(contentType)) {
+
             throw new IllegalArgumentException(
                     "Invalid file type. "
                             + "Only JPEG, PNG, and WEBP images are allowed."
@@ -65,7 +70,7 @@ public final class FileValidationUtil {
         }
     }
 
-    private static String validateExtension(
+    private String validateExtension(
             MultipartFile file) {
 
         String originalFilename =
@@ -87,20 +92,21 @@ public final class FileValidationUtil {
 
             throw new IllegalArgumentException(
                     "Invalid file extension. "
-                            + "Allowed: jpg, jpeg, webp."
+                            + "Allowed: jpg, jpeg, png, webp."
             );
         }
 
         return extension;
     }
 
-    private static void validateFileContent(
+    private void validateFileContent(
             MultipartFile file,
             String extension) {
 
         byte[] fileBytes;
 
         try {
+
             fileBytes = file.getBytes();
 
         } catch (IOException e) {
@@ -123,12 +129,13 @@ public final class FileValidationUtil {
         }
     }
 
-    private static boolean hasValidImageSignature(
+    private boolean hasValidImageSignature(
             byte[] fileBytes,
             String extension) {
 
         if (fileBytes == null
                 || fileBytes.length < 4) {
+
             return false;
         }
 
@@ -158,7 +165,7 @@ public final class FileValidationUtil {
         };
     }
 
-    public static String getExtension(
+    public String getExtension(
             String filename) {
 
         if (filename == null) {
@@ -170,6 +177,7 @@ public final class FileValidationUtil {
 
         if (lastDot < 0
                 || lastDot == filename.length() - 1) {
+
             return "";
         }
 

@@ -101,6 +101,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserResponse createUser(UserRequest request) {
 
         userValidationService.validateUsernameAvailable(
@@ -358,20 +359,5 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         return filename;
-    }
-
-    private boolean isValidImageSignature(byte[] header, String extension) {
-        return switch (extension) {
-            case "jpg", "jpeg" ->
-                    (header[0] & 0xFF) == 0xFF && (header[1] & 0xFF) == 0xD8 && (header[2] & 0xFF) == 0xFF;
-            case "png" ->
-                    (header[0] & 0xFF) == 0x89 && (header[1] & 0xFF) == 0x50
-                            && (header[2] & 0xFF) == 0x4E && (header[3] & 0xFF) == 0x47;
-            case "webp" ->
-                    // RIFF header
-                    (header[0] & 0xFF) == 0x52 && (header[1] & 0xFF) == 0x49
-                            && (header[2] & 0xFF) == 0x46 && (header[3] & 0xFF) == 0x46;
-            default -> false;
-        };
     }
 }

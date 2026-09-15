@@ -11,6 +11,12 @@ import org.springframework.stereotype.Service;
 public class UserValidationServiceImpl
         implements UserValidationService {
 
+    private static final String USERNAME_ALREADY_EXISTS =
+            "Username already exists";
+
+    private static final String EMAIL_ALREADY_IN_USE =
+            "Email already in use";
+
     private final UserRepository userRepository;
 
     public UserValidationServiceImpl(
@@ -25,7 +31,7 @@ public class UserValidationServiceImpl
 
         if (userRepository.existsByUsername(username)) {
             throw new UserAlreadyExistsException(
-                    "Username already exists"
+                    USERNAME_ALREADY_EXISTS
             );
         }
     }
@@ -34,12 +40,9 @@ public class UserValidationServiceImpl
     public void validateEmailAvailable(
             String email) {
 
-        if (userRepository
-                .findByEmail(email)
-                .isPresent()) {
-
+        if (userRepository.findByEmail(email).isPresent()) {
             throw new UserAlreadyExistsException(
-                    "Email already in use"
+                    EMAIL_ALREADY_IN_USE
             );
         }
     }
@@ -58,7 +61,7 @@ public class UserValidationServiceImpl
                             .equals(currentUserId)) {
 
                         throw new UserAlreadyExistsException(
-                                "Username already exists"
+                                USERNAME_ALREADY_EXISTS
                         );
                     }
                 });
@@ -78,7 +81,7 @@ public class UserValidationServiceImpl
                             .equals(currentUserId)) {
 
                         throw new UserAlreadyExistsException(
-                                "Email already in use"
+                                EMAIL_ALREADY_IN_USE
                         );
                     }
                 });
