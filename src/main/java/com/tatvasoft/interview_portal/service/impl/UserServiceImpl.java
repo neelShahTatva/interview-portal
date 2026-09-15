@@ -3,16 +3,22 @@ package com.tatvasoft.interview_portal.service.impl;
 import com.tatvasoft.interview_portal.dto.*;
 import com.tatvasoft.interview_portal.entity.Role;
 import com.tatvasoft.interview_portal.entity.User;
+import com.tatvasoft.interview_portal.enums.FileContentType;
+import com.tatvasoft.interview_portal.enums.FileExtension;
 import com.tatvasoft.interview_portal.exception.*;
 import com.tatvasoft.interview_portal.mapper.UserMapper;
 import com.tatvasoft.interview_portal.repository.RoleRepository;
 import com.tatvasoft.interview_portal.repository.UserRepository;
+import com.tatvasoft.interview_portal.service.FileStorageService;
 import com.tatvasoft.interview_portal.service.UserService;
+import com.tatvasoft.interview_portal.service.UserValidationService;
+import com.tatvasoft.interview_portal.util.FileValidationUtil;
 import com.tatvasoft.interview_portal.util.JwtUtil;
 import com.tatvasoft.interview_portal.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -34,66 +40,97 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final JwtUtil jwtUtil;
+    private final UserValidationService userValidationService;
+    private final FileStorageService fileStorageService;
 
     @Value("${app.upload.dir:uploads/profile-pictures}")
     private String uploadDir;
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
-    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
-            "image/jpeg", "image/png", "image/webp"
-    );
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
-            "jpg", "jpeg", "png", "webp"
-    );
 
-    public UserServiceImpl(UserRepository userRepository,
-                           RoleRepository roleRepository,
-                           PasswordEncoder passwordEncoder,
-                           UserMapper userMapper,
-                           JwtUtil jwtUtil) {
+    public UserServiceImpl(
+            UserRepository userRepository,
+            RoleRepository roleRepository,
+            PasswordEncoder passwordEncoder,
+            UserMapper userMapper,
+            JwtUtil jwtUtil,
+            UserValidationService userValidationService,
+            FileStorageService fileStorageService) {
+
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
         this.jwtUtil = jwtUtil;
+        this.userValidationService = userValidationService;
+        this.fileStorageService = fileStorageService;
     }
-
     private User getCurrentAuthenticatedUser() {
-        Long userId = SecurityUtil.getCurrentUserId();
+
+        Long userId =
+                SecurityUtil.getCurrentUserId();
+
+        String currentUsername =
+                SecurityUtil.getCurrentUsername();
+
         if (userId != null) {
-            return userRepository.findById(userId)
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id"));
+
+            return userRepository
+                    .findById(userId)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "User not found with username: "
+                                            + currentUsername
+                            ));
         }
-        String currentUsername = SecurityUtil.getCurrentUsername();
-        if (currentUsername != null) {
-            return getUserByUserName(currentUsername);
+
+        if (currentUsername != null
+                && !currentUsername.isBlank()) {
+
+            return userValidationService
+                    .getRequiredUserByUsername(
+                            currentUsername
+                    );
         }
-        throw new ResourceNotFoundException("Authenticated user not found");
+
+        throw new ResourceNotFoundException(
+                "Authenticated user not found"
+        );
     }
 
     @Override
     public UserResponse createUser(UserRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new UserAlreadyExistsException("Username already exists");
-        }
 
-         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-             throw new UserAlreadyExistsException("Email already in use");
-         }
+        userValidationService.validateUsernameAvailable(
+                request.getUsername()
+        );
 
-        Role role = roleRepository.findById(request.getRoleId())
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+        userValidationService.validateEmailAvailable(
+                request.getEmail()
+        );
 
-        User currentUser = getCurrentAuthenticatedUser();
+        Role role = roleRepository
+                .findById(request.getRoleId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Role not found"
+                        ));
+
+        User currentUser =
+                getCurrentAuthenticatedUser();
 
         User user = userMapper.toEntity(
                 request,
-                passwordEncoder.encode(request.getPassword()),
+                passwordEncoder.encode(
+                        request.getPassword()
+                ),
                 role,
                 currentUser.getId()
         );
 
-        User savedUser = userRepository.save(user);
+        User savedUser =
+                userRepository.save(user);
+
         return mapToResponse(savedUser);
     }
 
@@ -194,41 +231,88 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserProfileResponse updateProfile(ProfileUpdateRequest request) {
-        User user = getCurrentAuthenticatedUser();
+    @Transactional
+    public UserProfileResponse updateProfile(
+            ProfileUpdateRequest request) {
 
-        if (!user.getUsername().equalsIgnoreCase(request.getUsername())
-                && userRepository.existsByUsername(request.getUsername())) {
-            throw new UserAlreadyExistsException("Username already exists");
+        User user =
+                getCurrentAuthenticatedUser();
+
+        if (!user.getUsername()
+                .equalsIgnoreCase(request.getUsername())) {
+
+            userValidationService
+                    .validateUsernameAvailableForUpdate(
+                            request.getUsername(),
+                            user.getId()
+                    );
         }
 
-        if (!user.getEmail().equalsIgnoreCase(request.getEmail())
-                && userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new UserAlreadyExistsException("Email already in use");
+        if (!user.getEmail()
+                .equalsIgnoreCase(request.getEmail())) {
+
+            userValidationService
+                    .validateEmailAvailableForUpdate(
+                            request.getEmail(),
+                            user.getId()
+                    );
         }
 
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setUpdatedAt(LocalDateTime.now());
-        user.setUpdatedBy(user.getId());
+        user.setUsername(
+                request.getUsername()
+        );
+
+        user.setEmail(
+                request.getEmail()
+        );
+
+        user.setUpdatedAt(
+                LocalDateTime.now()
+        );
+
+        user.setUpdatedBy(
+                user.getId()
+        );
 
         if (request.getRoleId() != null) {
-            Role role = roleRepository.findById(request.getRoleId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+
+            Role role =
+                    roleRepository
+                            .findById(request.getRoleId())
+                            .orElseThrow(() ->
+                                    new ResourceNotFoundException(
+                                            "Role not found"
+                                    ));
+
             user.setRole(role);
         }
 
         if (request.getIsActive() != null) {
-            user.setIsActive(request.getIsActive());
+            user.setIsActive(
+                    request.getIsActive()
+            );
         }
 
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        if (request.getPassword() != null
+                && !request.getPassword().isBlank()) {
+
+            user.setPassword(
+                    passwordEncoder.encode(
+                            request.getPassword()
+                    )
+            );
         }
 
-        User updated = userRepository.save(user);
-        UserProfileResponse response = mapToProfileResponse(updated);
-        response.setToken(jwtUtil.generateAccessToken(updated));
+        User updated =
+                userRepository.save(user);
+
+        UserProfileResponse response =
+                mapToProfileResponse(updated);
+
+        response.setToken(
+                jwtUtil.generateAccessToken(updated)
+        );
+
         return response;
     }
 
@@ -246,75 +330,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String uploadProfilePicture(MultipartFile file) {
-        //  file must not be null/empty
-        if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("No file provided. Please select an image to upload.");
-        }
+    @Transactional
+    public String uploadProfilePicture(
+            MultipartFile file) {
 
-        // file size ≤ 5 MB
-        if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException(
-                    "File size exceeds the 5 MB limit. Please upload a smaller image.");
-        }
+        String extension =
+                FileValidationUtil.validateProfilePicture(
+                        file
+                );
 
-        // MIME / Content-Type
-        String contentType = file.getContentType();
-        if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase())) {
-            throw new IllegalArgumentException(
-                    "Invalid file type. Only JPEG, PNG, and WEBP images are allowed.");
-        }
+        User user =
+                getCurrentAuthenticatedUser();
 
-        // file extension
-        String originalName = file.getOriginalFilename();
-        if (originalName == null || !originalName.contains(".")) {
-            throw new IllegalArgumentException("File must have a valid extension (jpg, jpeg, png, webp).");
-        }
-        String extension = originalName.substring(originalName.lastIndexOf('.') + 1).toLowerCase();
-        if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            throw new IllegalArgumentException(
-                    "Invalid file extension. Allowed: jpg, jpeg, png, webp.");
-        }
+        String filename =
+                fileStorageService.save(
+                        file,
+                        uploadDir,
+                        extension
+                );
 
-        // Read bytes once — avoids double-stream consumption issue
-        byte[] fileBytes;
-        try {
-            fileBytes = file.getBytes();
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Could not read file content. Please try again.");
-        }
+        user.setProfilePicture(filename);
+        user.setUpdatedAt(LocalDateTime.now());
+        user.setUpdatedBy(user.getId());
 
-        // magic bytes validation
-        if (fileBytes.length < 4 || !isValidImageSignature(java.util.Arrays.copyOf(fileBytes, 4), extension)) {
-            throw new IllegalArgumentException(
-                    "File content does not match its declared type. Please upload a real image.");
-        }
+        userRepository.save(user);
 
-        // Resolve current user
-        User user = getCurrentAuthenticatedUser();
-
-        // Save file to disk
-        try {
-            Path uploadPath = Paths.get(uploadDir);
-            Files.createDirectories(uploadPath);
-
-            // Filename format: {yyyyMMdd_HHmmss}_{uuid6}.{ext}
-            String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-            String filename = dateStr + "_" + UUID.randomUUID().toString().substring(0, 6) + "." + extension;
-            Path filePath = uploadPath.resolve(filename);
-            Files.write(filePath, fileBytes);
-
-            // Persist only filename to DB
-            user.setProfilePicture(filename);
-            user.setUpdatedAt(LocalDateTime.now());
-            user.setUpdatedBy(user.getId());
-            userRepository.save(user);
-
-            return filename;
-
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to save profile picture. Please try again.", e);
-        }
+        return filename;
     }
 
     private boolean isValidImageSignature(byte[] header, String extension) {
