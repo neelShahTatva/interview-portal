@@ -16,4 +16,22 @@ public class SecurityUtil {
 
         return authentication.getName();
     }
+
+    public static Long getCurrentUserId() {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            return null;
+        }
+
+        Object details = authentication.getDetails();
+        if (details instanceof Long userId) {
+            return userId;
+        }
+        if (details instanceof Number number) {
+            return number.longValue();
+        }
+        return null;
+    }
 }

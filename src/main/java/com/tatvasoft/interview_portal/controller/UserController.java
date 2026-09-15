@@ -3,8 +3,10 @@ package com.tatvasoft.interview_portal.controller;
 import com.tatvasoft.interview_portal.dto.*;
 import com.tatvasoft.interview_portal.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -88,5 +90,27 @@ public class UserController {
                         "User deleted successfully"
                 )
         );
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> getProfile() {
+        return ResponseEntity.ok(
+                new ApiResponse<>(200, true, null, userService.getProfile())
+        );
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> updateProfile(
+            @Valid @RequestBody ProfileUpdateRequest request) {
+        return ResponseEntity.ok(
+                new ApiResponse<>(200, true, null, userService.updateProfile(request))
+        );
+    }
+
+    @PostMapping(value = "/profile/picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<String>> uploadProfilePicture(
+            @RequestParam("file") MultipartFile file) {
+        String filename = userService.uploadProfilePicture(file);
+        return ResponseEntity.ok(new ApiResponse<>(200, true, null, filename));
     }
 }
