@@ -3,8 +3,6 @@ package com.tatvasoft.interview_portal.service.impl;
 import com.tatvasoft.interview_portal.dto.*;
 import com.tatvasoft.interview_portal.entity.Role;
 import com.tatvasoft.interview_portal.entity.User;
-import com.tatvasoft.interview_portal.enums.FileContentType;
-import com.tatvasoft.interview_portal.enums.FileExtension;
 import com.tatvasoft.interview_portal.exception.*;
 import com.tatvasoft.interview_portal.mapper.UserMapper;
 import com.tatvasoft.interview_portal.repository.RoleRepository;
@@ -21,15 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
