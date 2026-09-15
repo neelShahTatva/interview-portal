@@ -42,11 +42,11 @@ public class UserServiceImpl implements UserService {
     private final JwtUtil jwtUtil;
     private final UserValidationService userValidationService;
     private final FileStorageService fileStorageService;
+    private final FileValidationUtil fileValidationUtil;
+
 
     @Value("${app.upload.dir:uploads/profile-pictures}")
     private String uploadDir;
-
-    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
     public UserServiceImpl(
             UserRepository userRepository,
@@ -55,7 +55,8 @@ public class UserServiceImpl implements UserService {
             UserMapper userMapper,
             JwtUtil jwtUtil,
             UserValidationService userValidationService,
-            FileStorageService fileStorageService) {
+            FileStorageService fileStorageService,
+            FileValidationUtil fileValidationUtil) {
 
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -64,6 +65,7 @@ public class UserServiceImpl implements UserService {
         this.jwtUtil = jwtUtil;
         this.userValidationService = userValidationService;
         this.fileStorageService = fileStorageService;
+        this.fileValidationUtil = fileValidationUtil;
     }
     private User getCurrentAuthenticatedUser() {
 
@@ -144,14 +146,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return mapToResponse(user);
     }
 
     @Override
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("User not found with id");
+            throw new ResourceNotFoundException("User not found");
         }
         userRepository.deleteById(id);
     }
@@ -335,7 +337,7 @@ public class UserServiceImpl implements UserService {
             MultipartFile file) {
 
         String extension =
-                FileValidationUtil.validateProfilePicture(
+                fileValidationUtil.validateProfilePicture(
                         file
                 );
 
