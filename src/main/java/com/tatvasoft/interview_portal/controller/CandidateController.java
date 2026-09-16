@@ -7,6 +7,7 @@ import com.tatvasoft.interview_portal.dto.CandidateResponse;
 import com.tatvasoft.interview_portal.dto.CandidateSolutionResponse;
 import com.tatvasoft.interview_portal.service.CandidateService;
 import com.tatvasoft.interview_portal.service.CandidateSolutionService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,7 @@ public class CandidateController {
 
     // CREATE CANDIDATE
     @PostMapping
-    public ResponseEntity<ApiResponse<CandidateResponse>> create(@RequestBody CandidateRequest request) {
+    public ResponseEntity<ApiResponse<CandidateResponse>> create(@Valid @RequestBody CandidateRequest request) {
 
         CandidateResponse candidate = candidateService.create(request);
 
@@ -47,7 +48,7 @@ public class CandidateController {
 
     // UPDATE CANDIDATE
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CandidateResponse>> update(@PathVariable Long id, @RequestBody CandidateRequest request) {
+    public ResponseEntity<ApiResponse<CandidateResponse>> update(@PathVariable Long id, @Valid @RequestBody CandidateRequest request) {
 
         CandidateResponse updatedCandidate = candidateService.update(id, request);
 

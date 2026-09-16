@@ -3,6 +3,9 @@ package com.tatvasoft.interview_portal.service.impl;
 import com.tatvasoft.interview_portal.service.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+
+import java.io.UnsupportedEncodingException;
+
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,8 @@ public class EmailServiceImpl implements EmailService {
 
             MimeMessageHelper helper =
                     new MimeMessageHelper(message, true);
+
+            helper.setFrom("test.dotnet@etatvasoft.com", "Interview Portal");
 
             helper.setTo(toEmail);
 
@@ -97,7 +102,7 @@ public class EmailServiceImpl implements EmailService {
 
             mailSender.send(message);
 
-        } catch (MessagingException e) {
+        } catch (MessagingException | UnsupportedEncodingException e) {
 
             throw new RuntimeException("Failed to send email");
         }
