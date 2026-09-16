@@ -1,6 +1,8 @@
 package com.tatvasoft.interview_portal.exception;
 
 import com.tatvasoft.interview_portal.dto.ApiResponse;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -120,6 +122,27 @@ public class GlobalExceptionHandler {
                         errorMessages,
                         null
                 );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleConstraintViolationException(
+            ConstraintViolationException ex) {
+
+        List<String> errors = ex.getConstraintViolations()
+                .stream()
+                .map(ConstraintViolation::getMessage)
+                .toList();
+
+        ApiResponse<Object> response = new ApiResponse<>(
+                400,
+                false,
+                errors,
+                null
+        );
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

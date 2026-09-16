@@ -6,12 +6,15 @@ import com.tatvasoft.interview_portal.dto.QuestionRequest;
 import com.tatvasoft.interview_portal.dto.QuestionResponse;
 import com.tatvasoft.interview_portal.entity.Question;
 import com.tatvasoft.interview_portal.service.QuestionService;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,6 +24,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/questions")
+@Validated
 public class QuestionController {
 
     private final QuestionService questionService;
@@ -160,7 +164,10 @@ private String bulkQuestionTemplatePath;
     @GetMapping("/recommend")
     public ResponseEntity<ApiResponse<List<QuestionResponse>>> recommendQuestions(
             @RequestParam Long candidateId,
-            @RequestParam(defaultValue = "90") Integer maxMinutes) {
+            @RequestParam(defaultValue = "90")
+            @Min(value = 30, message = "Assessment time must be at least 30 minutes")
+            @Max(value = 180, message = "Assessment time must not exceed 180 minutes")
+            Integer maxMinutes) {
 
         return ResponseEntity.ok(
                 new ApiResponse<>(
