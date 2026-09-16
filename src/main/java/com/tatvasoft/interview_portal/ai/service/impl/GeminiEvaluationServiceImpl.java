@@ -12,6 +12,8 @@ import com.tatvasoft.interview_portal.entity.Question;
 import com.tatvasoft.interview_portal.entity.QuestionSolution;
 import com.tatvasoft.interview_portal.repository.QuestionSolutionRepository;
 import com.tatvasoft.interview_portal.repository.QuestionsRepository;
+import com.tatvasoft.interview_portal.util.AiEvaluationUtil;
+import com.tatvasoft.interview_portal.util.EvaluationValidationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -39,30 +41,16 @@ public class GeminiEvaluationServiceImpl implements AiProviderService {
     private QuestionSolutionRepository questionSolutionRepository;
     @Autowired
     private QuestionsRepository questionsRepository;
+    @Autowired
+    private EvaluationValidationUtil evaluationValidationUtil;
+    @Autowired
+    private AiEvaluationUtil aiEvaluationUtil;
 
     @Override
     public EvaluationResult evaluateCode(FileSubmissionRequest request) {
         try {
 
-            if (request == null) {
-                throw new IllegalArgumentException(
-                        "Submission request is null"
-                );
-            }
-
-            if (request.getQuestionId() == null) {
-                throw new IllegalArgumentException(
-                        "Question ID is required"
-                );
-            }
-
-            if (request.getSubmissionFile() == null ||
-                    request.getSubmissionFile().isEmpty()) {
-
-                throw new IllegalArgumentException(
-                        "Submission file is empty"
-                );
-            }
+            evaluationValidationUtil.validateRequest(request);
 
             Question question =
                     questionsRepository
@@ -91,7 +79,7 @@ public class GeminiEvaluationServiceImpl implements AiProviderService {
             String referenceCode = solution.getSolutionCode();
 
             String promptText =
-                    buildEvaluationPrompt(
+                    aiEvaluationUtil.buildEvaluationPrompt(
                             question.getDescription(),
                             referenceCode,
                             candidateCode
@@ -107,7 +95,7 @@ public class GeminiEvaluationServiceImpl implements AiProviderService {
 
             String aiJson = extractAiText(responseBody);
 
-            String cleanedJson = cleanAiJson(aiJson);
+            String cleanedJson = aiEvaluationUtil.cleanAiJson(aiJson);
 
             EvaluationResult result =
                     objectMapper.readValue(
@@ -115,7 +103,7 @@ public class GeminiEvaluationServiceImpl implements AiProviderService {
                             EvaluationResult.class
                     );
 
-            validateEvaluationResult(result);
+            evaluationValidationUtil.validateEvaluationResult(result);
 
             return result;
 
@@ -135,18 +123,6 @@ public class GeminiEvaluationServiceImpl implements AiProviderService {
 
             return error;
         }
-    }
-
-    private String buildEvaluationPrompt(
-            String question,
-            String referenceCode,
-            String candidateCode) {
-
-        return GeminiConstants.EVALUATION_USER_PROMPT_TEMPLATE.formatted(
-                question,
-                referenceCode,
-                candidateCode
-        );
     }
 
     private String buildGeminiRequest(
@@ -291,118 +267,6 @@ public class GeminiEvaluationServiceImpl implements AiProviderService {
         }
 
         return textNode.asText();
-    }
-
-    private String cleanAiJson(
-            String aiJson) {
-
-        if (aiJson == null ||
-                aiJson.isBlank()) {
-
-            throw new RuntimeException(
-                    "AI returned empty JSON"
-            );
-        }
-
-        String cleaned =
-                aiJson.trim();
-
-        // Gemini sometimes returns ```json ... ```
-        if (cleaned.startsWith("```json")) {
-
-            cleaned =
-                    cleaned.substring(
-                            7
-                    ).trim();
-
-        } else if (cleaned.startsWith("```")) {
-
-            cleaned =
-                    cleaned.substring(
-                            3
-                    ).trim();
-        }
-
-        if (cleaned.endsWith("```")) {
-
-            cleaned =
-                    cleaned.substring(
-                            0,
-                            cleaned.length() - 3
-                    ).trim();
-        }
-
-        int firstBrace =
-                cleaned.indexOf('{');
-
-        int lastBrace =
-                cleaned.lastIndexOf('}');
-
-        if (firstBrace >= 0 &&
-                lastBrace > firstBrace) {
-
-            cleaned =
-                    cleaned.substring(
-                            firstBrace,
-                            lastBrace + 1
-                    );
-        }
-
-        return cleaned.trim();
-    }
-
-    private void validateEvaluationResult(
-            EvaluationResult result) {
-
-        if (result == null) {
-            throw new RuntimeException(
-                    "Evaluation result is null"
-            );
-        }
-
-        if (result.getScore() < 0 ||
-                result.getScore() > 10) {
-
-            throw new RuntimeException(
-                    "Invalid score returned by Gemini"
-            );
-        }
-
-        if (result.getFeedback() == null ||
-                result.getFeedback().isBlank()) {
-
-            throw new RuntimeException(
-                    "Gemini returned empty feedback"
-            );
-        }
-
-        if (result.getTimeComplexity() == null ||
-                result.getTimeComplexity().isBlank()) {
-
-            throw new RuntimeException(
-                    "Time complexity is missing"
-            );
-        }
-
-        if (result.getSpaceComplexity() == null ||
-                result.getSpaceComplexity().isBlank()) {
-
-            throw new RuntimeException(
-                    "Space complexity is missing"
-            );
-        }
-
-        if (result.getTimeComplexity().length() > 50) {
-            throw new RuntimeException(
-                    "Invalid time complexity"
-            );
-        }
-
-        if (result.getSpaceComplexity().length() > 50) {
-            throw new RuntimeException(
-                    "Invalid space complexity"
-            );
-        }
     }
 
     @Override

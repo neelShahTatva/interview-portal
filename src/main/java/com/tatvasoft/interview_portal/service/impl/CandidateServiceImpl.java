@@ -234,7 +234,7 @@ public class CandidateServiceImpl implements CandidateService {
 
         result.setTotalQuestions(evaluations.size());
 
-        result.setOverallScore((double) submission.getAiScore());
+        result.setOverallScore((int) submission.getAiScore());
 
         return result;
     }
