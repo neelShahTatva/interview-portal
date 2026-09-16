@@ -11,7 +11,7 @@ public class MultiQuestionEvaluationResult {
 
     private Boolean isSuccess;
 
-    private Double overallScore;
+    private Integer overallScore;
 
     private Integer totalQuestions;
 

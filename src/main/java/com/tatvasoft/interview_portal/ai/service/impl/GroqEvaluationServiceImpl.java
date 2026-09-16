@@ -7,10 +7,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tatvasoft.interview_portal.ai.dto.EvaluationResult;
 import com.tatvasoft.interview_portal.ai.dto.FileSubmissionRequest;
 import com.tatvasoft.interview_portal.ai.service.AiProviderService;
+import com.tatvasoft.interview_portal.constant.GeminiConstants;
 import com.tatvasoft.interview_portal.entity.Question;
 import com.tatvasoft.interview_portal.entity.QuestionSolution;
 import com.tatvasoft.interview_portal.repository.QuestionSolutionRepository;
 import com.tatvasoft.interview_portal.repository.QuestionsRepository;
+import com.tatvasoft.interview_portal.util.AiEvaluationUtil;
+import com.tatvasoft.interview_portal.util.EvaluationValidationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -41,9 +44,16 @@ public class GroqEvaluationServiceImpl implements AiProviderService {
             questionSolutionRepository;
     @Autowired
     private QuestionsRepository questionsRepository;
+    @Autowired
+    private EvaluationValidationUtil evaluationValidationUtil;
+    @Autowired
+    private AiEvaluationUtil aiEvaluationUtil;
+
     @Override
     public EvaluationResult evaluateCode(FileSubmissionRequest request) {
         try {
+            evaluationValidationUtil.validateRequest(request);
+
             QuestionSolution solution =
                     questionSolutionRepository
                             .findByQuestionIdAndIsActiveTrue(
@@ -68,34 +78,9 @@ public class GroqEvaluationServiceImpl implements AiProviderService {
                     request.getSubmissionFile().getBytes(), StandardCharsets.UTF_8
             );
 
-            String systemInstruction = """
-                You are a strict Senior Java Technical Interviewer.
-                Return ONLY a raw JSON object matching this exact structure. Do not include markdown tags like ```json.
-                {
-                  "score": <integer between 0 and 10>,
-                  "feedback": "<string: detailed overall critique>",
-                  "timeComplexity": "<string: Big-O notation>",
-                  "spaceComplexity": "<string: Big-O notation>",
-                  "missedEdgeCases": ["<string>", "<string>"],
-                  "securityIssues": ["<string>", "<string>"],
-                  "optimizedCode": "<string: the perfect production-ready Java code>"
-                }
-                """.trim();
+            String systemInstruction = GeminiConstants.EVALUATION_SYSTEM_INSTRUCTION;
 
-            String userPrompt = String.format(
-                    """
-                    Question Topic: %s
-    
-                    Reference / Existing Solution:
-                    %s
-    
-                    Candidate Submission:
-                    %s
-    
-                    Compare the candidate's code against the reference solution.
-                    Evaluate for correctness, performance, thread-safety, and edge cases.
-                    Be brutal but fair. Provide the optimized, production-ready version if their code is flawed.
-                    """,
+            String userPrompt = aiEvaluationUtil.buildEvaluationPrompt(
                     question.getDescription(),
                     solutionCode,
                     candidateCode
@@ -137,11 +122,22 @@ public class GroqEvaluationServiceImpl implements AiProviderService {
             String aiJsonString = root.path("choices").get(0)
                     .path("message").path("content").asText();
 
-            return objectMapper.readValue(aiJsonString, EvaluationResult.class);
+            String cleanedJson = aiEvaluationUtil.cleanAiJson(aiJsonString);
+
+            EvaluationResult result = objectMapper.readValue(cleanedJson, EvaluationResult.class);
+            evaluationValidationUtil.validateEvaluationResult(result);
+
+            return result;
 
         } catch (Exception e) {
             EvaluationResult error = new EvaluationResult();
-            error.setFeedback("Groq API Error: " + e.getMessage());
+            error.setScore(0);
+            error.setFeedback(
+                    "We could not complete the code evaluation at this time. "
+                            + "Please try again."
+            );
+            error.setTimeComplexity("N/A");
+            error.setSpaceComplexity("N/A");
             return error;
         }
     }

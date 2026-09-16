@@ -146,7 +146,7 @@ public class MultiQuestionEvaluationServiceImpl implements MultiQuestionEvaluati
         assessmentRepository.save(assessment);
         MultiQuestionEvaluationResult finalResult = new MultiQuestionEvaluationResult();
         finalResult.setTotalQuestions(results.size());
-        finalResult.setOverallScore(overallScore);
+        finalResult.setOverallScore((int) overallScore);
         finalResult.setEvaluations(results);
 
         finalResult.setIsSuccess(true);
