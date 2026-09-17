@@ -7,10 +7,6 @@ import java.util.List;
 
 public final class ExceptionUtil {
 
-    private ExceptionUtil() {
-        // Utility class
-    }
-
     public static void buildErrorResponse(
             HttpStatus status,
             String message) {
