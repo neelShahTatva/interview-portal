@@ -12,6 +12,8 @@ import com.tatvasoft.interview_portal.repository.*;
 import com.tatvasoft.interview_portal.service.CandidateService;
 import com.tatvasoft.interview_portal.util.SecurityUtil;
 import org.springframework.stereotype.Service;
+import static com.tatvasoft.interview_portal.exception.ExceptionUtil.buildErrorResponse;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -47,7 +49,10 @@ public class CandidateServiceImpl implements CandidateService {
     public CandidateResponse create(CandidateRequest request) {
 
         if (candidateRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Candidate email already exists");
+            buildErrorResponse(
+                    HttpStatus.BAD_REQUEST,
+                    "Candidate already exists"
+            );
         }
 
         String username = SecurityUtil.getCurrentUsername();
