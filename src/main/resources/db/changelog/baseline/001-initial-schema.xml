@@ -1,0 +1,631 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+            http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+
+    <!--  ROLES  -->
+
+    <changeSet id="001-create-roles" author="interview-portal">
+
+        <createTable tableName="roles">
+
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints
+                        primaryKey="true"
+                        nullable="false"/>
+            </column>
+
+            <column name="role_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+
+        <insert tableName="roles">
+            <column name="role_name" value="ADMIN"/>
+        </insert>
+
+        <insert tableName="roles">
+            <column name="role_name" value="INTERVIEWER"/>
+        </insert>
+
+    </changeSet>
+
+    <!-- USERS  -->
+
+    <changeSet id="002-create-users" author="interview-portal">
+
+        <createTable tableName="users">
+
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints
+                        primaryKey="true"
+                        nullable="false"/>
+            </column>
+
+            <column name="username" type="VARCHAR(255)"/>
+
+            <column name="password" type="VARCHAR(255)"/>
+
+            <column name="email" type="VARCHAR(255)"/>
+
+            <column name="is_active" type="BOOLEAN"/>
+
+            <column name="role_id" type="BIGINT"/>
+
+            <column name="created_at" type="TIMESTAMP"/>
+
+            <column name="updated_at" type="TIMESTAMP"/>
+
+            <column name="created_by" type="BIGINT"/>
+
+            <column name="updated_by" type="BIGINT"/>
+
+            <column name="reset_token" type="VARCHAR(255)"/>
+
+            <column name="reset_token_expiry" type="TIMESTAMP"/>
+
+            <column name="profile_picture" type="VARCHAR(255)"/>
+
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="users"
+                baseColumnNames="role_id"
+                referencedTableName="roles"
+                referencedColumnNames="id"
+                constraintName="fk_users_role"/>
+
+    </changeSet>
+
+
+    <!-- CANDIDATES-->
+
+    <changeSet id="003-create-candidates" author="interview-portal">
+
+        <createTable tableName="candidates">
+
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints
+                        primaryKey="true"
+                        nullable="false"/>
+            </column>
+
+            <column name="first_name" type="VARCHAR(255)"/>
+
+            <column name="last_name" type="VARCHAR(255)"/>
+
+            <column name="email" type="VARCHAR(255)"/>
+
+            <column name="experience" type="INTEGER"/>
+
+            <column name="designation" type="VARCHAR(255)"/>
+
+            <column name="is_active" type="BOOLEAN"/>
+
+            <column name="created_at" type="TIMESTAMP"/>
+
+            <column name="updated_at" type="TIMESTAMP"/>
+
+            <column name="created_by" type="BIGINT"/>
+
+            <column name="updated_by" type="BIGINT"/>
+
+        </createTable>
+
+    </changeSet>
+
+
+    <!--  CATEGORIES  -->
+
+    <changeSet id="004-create-categories" author="interview-portal">
+
+        <createTable tableName="categories">
+
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints
+                        primaryKey="true"
+                        nullable="false"/>
+            </column>
+
+            <column name="name" type="VARCHAR(255)"/>
+
+            <column name="is_active" type="BOOLEAN"/>
+
+        </createTable>
+
+    </changeSet>
+
+
+    <!-- QUESTIONS  -->
+
+    <changeSet id="005-create-questions" author="interview-portal">
+
+        <createTable tableName="questions">
+
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints
+                        primaryKey="true"
+                        nullable="false"/>
+            </column>
+
+            <column name="title" type="VARCHAR(255)"/>
+
+            <column name="description" type="VARCHAR(255)"/>
+
+            <column name="difficulty" type="VARCHAR(255)"/>
+
+            <column name="estimated_time" type="INTEGER"/>
+
+            <column name="is_active" type="BOOLEAN"/>
+
+            <column name="created_at" type="TIMESTAMP"/>
+
+            <column name="created_by" type="BIGINT"/>
+
+            <column name="updated_at" type="TIMESTAMP"/>
+
+            <column name="updated_by" type="BIGINT"/>
+
+        </createTable>
+
+    </changeSet>
+
+
+    <!-- QUESTION DESIGNATIONS  -->
+
+    <changeSet id="006-create-question-designations"
+               author="interview-portal">
+
+        <createTable tableName="question_designations">
+
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints
+                        primaryKey="true"
+                        nullable="false"/>
+            </column>
+
+            <column name="designation" type="VARCHAR(255)"/>
+
+            <column name="question_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="TIMESTAMP"/>
+
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="question_designations"
+                baseColumnNames="question_id"
+                referencedTableName="questions"
+                referencedColumnNames="id"
+                constraintName="fk_question_designations_question"/>
+
+    </changeSet>
+
+
+    <!--  QUESTION CATEGORIES  -->
+
+    <changeSet id="007-create-question-categories"
+               author="interview-portal">
+
+        <createTable tableName="question_categories">
+
+            <column name="question_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="category_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="question_categories"
+                baseColumnNames="question_id"
+                referencedTableName="questions"
+                referencedColumnNames="id"
+                constraintName="fk_question_categories_question"/>
+
+        <addForeignKeyConstraint
+                baseTableName="question_categories"
+                baseColumnNames="category_id"
+                referencedTableName="categories"
+                referencedColumnNames="id"
+                constraintName="fk_question_categories_category"/>
+
+    </changeSet>
+
+
+    <!-- QUESTION SOLUTIONS -->
+
+    <changeSet id="008-create-question-solutions"
+               author="interview-portal">
+
+        <createTable tableName="question_solutions">
+
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints
+                        primaryKey="true"
+                        nullable="false"/>
+            </column>
+
+            <column name="question_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="language" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="solution_code" type="TEXT"/>
+
+            <column name="is_active" type="BOOLEAN"/>
+
+            <column name="created_at" type="TIMESTAMP"/>
+
+            <column name="created_by" type="BIGINT"/>
+
+            <column name="updated_at" type="TIMESTAMP"/>
+
+            <column name="updated_by" type="BIGINT"/>
+
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="question_solutions"
+                baseColumnNames="question_id"
+                referencedTableName="questions"
+                referencedColumnNames="id"
+                constraintName="fk_question_solutions_question"/>
+
+    </changeSet>
+
+
+    <!--  ASSESSMENTS  -->
+
+    <changeSet id="009-create-assessments"
+               author="interview-portal">
+
+        <createTable tableName="assessments">
+
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints
+                        primaryKey="true"
+                        nullable="false"/>
+            </column>
+
+            <column name="candidate_id" type="BIGINT"/>
+
+            <column name="title" type="VARCHAR(255)"/>
+
+            <column name="status" type="VARCHAR(255)"/>
+
+            <column name="time_limit_minutes" type="INTEGER"/>
+
+            <column name="is_active" type="BOOLEAN"/>
+
+            <column name="started_at" type="TIMESTAMP"/>
+
+            <column name="completed_at" type="TIMESTAMP"/>
+
+            <column name="created_at" type="TIMESTAMP"/>
+
+            <column name="created_by" type="BIGINT"/>
+
+            <column name="updated_at" type="TIMESTAMP"/>
+
+            <column name="updated_by" type="BIGINT"/>
+
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="assessments"
+                baseColumnNames="candidate_id"
+                referencedTableName="candidates"
+                referencedColumnNames="id"
+                constraintName="fk_assessments_candidate"/>
+
+    </changeSet>
+
+
+    <!-- ASSESSMENT QUESTIONS  -->
+
+    <changeSet id="010-create-assessment-questions"
+               author="interview-portal">
+
+        <createTable tableName="assessment_questions">
+
+            <column name="id" type="INTEGER" autoIncrement="true">
+                <constraints
+                        primaryKey="true"
+                        nullable="false"/>
+            </column>
+
+            <column name="assessment_id" type="BIGINT"/>
+
+            <column name="question_id" type="BIGINT"/>
+
+            <column name="created_at" type="TIMESTAMP"/>
+
+            <column name="created_by" type="BIGINT"/>
+
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="assessment_questions"
+                baseColumnNames="assessment_id"
+                referencedTableName="assessments"
+                referencedColumnNames="id"
+                constraintName="fk_assessment_questions_assessment"/>
+
+        <addForeignKeyConstraint
+                baseTableName="assessment_questions"
+                baseColumnNames="question_id"
+                referencedTableName="questions"
+                referencedColumnNames="id"
+                constraintName="fk_assessment_questions_question"/>
+
+    </changeSet>
+
+
+    <!--  SUBMISSIONS  -->
+
+    <changeSet id="011-create-submissions"
+               author="interview-portal">
+
+        <createTable tableName="submissions">
+
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints
+                        primaryKey="true"
+                        nullable="false"/>
+            </column>
+
+            <column name="assessment_id" type="BIGINT"/>
+
+            <column name="reference_file_id" type="BIGINT"/>
+
+            <column name="candidate_id" type="BIGINT"/>
+
+            <column name="code" type="VARCHAR(255)"/>
+
+            <column name="output" type="VARCHAR(255)"/>
+
+            <column name="ai_score" type="INTEGER"/>
+
+            <column name="ai_feedback" type="VARCHAR(255)"/>
+
+            <column name="status" type="VARCHAR(255)"/>
+
+            <column name="evaluated_at" type="TIMESTAMP"/>
+
+            <column name="created_at" type="TIMESTAMP"/>
+
+            <column name="created_by" type="BIGINT"/>
+
+            <column name="updated_at" type="TIMESTAMP"/>
+
+            <column name="updated_by" type="BIGINT"/>
+
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="submissions"
+                baseColumnNames="assessment_id"
+                referencedTableName="assessments"
+                referencedColumnNames="id"
+                constraintName="fk_submissions_assessment"/>
+
+        <addForeignKeyConstraint
+                baseTableName="submissions"
+                baseColumnNames="candidate_id"
+                referencedTableName="candidates"
+                referencedColumnNames="id"
+                constraintName="fk_submissions_candidate"/>
+
+    </changeSet>
+
+
+    <!-- CANDIDATE SOLUTIONS   -->
+
+    <changeSet id="012-create-candidate-solutions"
+               author="interview-portal">
+
+        <createTable tableName="candidate_solutions">
+
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints
+                        primaryKey="true"
+                        nullable="false"/>
+            </column>
+
+            <column name="submission_id" type="BIGINT"/>
+
+            <column name="question_id" type="BIGINT"/>
+
+            <column name="solution" type="TEXT"/>
+
+            <column name="ai_score" type="INTEGER"/>
+
+            <column name="ai_feedback" type="TEXT"/>
+
+            <column name="time_complexity" type="VARCHAR(255)"/>
+
+            <column name="space_complexity" type="VARCHAR(255)"/>
+
+            <column name="missed_edge_cases" type="TEXT"/>
+
+            <column name="security_issues" type="TEXT"/>
+
+            <column name="optimized_code" type="TEXT"/>
+
+            <column name="created_at" type="TIMESTAMP"/>
+
+            <column name="created_by" type="BIGINT"/>
+
+            <column name="updated_at" type="TIMESTAMP"/>
+
+            <column name="updated_by" type="BIGINT"/>
+
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="candidate_solutions"
+                baseColumnNames="submission_id"
+                referencedTableName="submissions"
+                referencedColumnNames="id"
+                constraintName="fk_candidate_solutions_submission"/>
+
+        <addForeignKeyConstraint
+                baseTableName="candidate_solutions"
+                baseColumnNames="question_id"
+                referencedTableName="questions"
+                referencedColumnNames="id"
+                constraintName="fk_candidate_solutions_question"/>
+
+    </changeSet>
+
+
+    <!--  GLOBAL EXCEPTIONS  -->
+
+    <changeSet id="013-create-global-exceptions"
+               author="interview-portal">
+
+        <createTable tableName="global_exceptions">
+
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints
+                        primaryKey="true"
+                        nullable="false"/>
+            </column>
+
+            <column name="error_message" type="TEXT"/>
+
+            <column name="stack_trace" type="TEXT"/>
+
+            <column name="error_code" type="INTEGER"/>
+
+            <column name="user_id" type="BIGINT"/>
+
+            <column name="api_endpoint" type="VARCHAR(500)"/>
+
+            <column name="timestamp" type="TIMESTAMP"/>
+
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="global_exceptions"
+                baseColumnNames="user_id"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                constraintName="fk_global_exceptions_user"/>
+
+    </changeSet>
+
+
+    <!--  INDEXES  -->
+
+    <changeSet id="014-create-indexes"
+               author="interview-portal">
+
+        <createIndex
+                tableName="users"
+                indexName="idx_users_username">
+
+            <column name="username"/>
+
+        </createIndex>
+
+        <createIndex
+                tableName="users"
+                indexName="idx_users_email">
+
+            <column name="email"/>
+
+        </createIndex>
+
+        <createIndex
+                tableName="candidates"
+                indexName="idx_candidates_email">
+
+            <column name="email"/>
+
+        </createIndex>
+
+        <createIndex
+                tableName="assessments"
+                indexName="idx_assessments_candidate_id">
+
+            <column name="candidate_id"/>
+
+        </createIndex>
+
+        <createIndex
+                tableName="assessments"
+                indexName="idx_assessments_status">
+
+            <column name="status"/>
+
+        </createIndex>
+
+        <createIndex
+                tableName="assessment_questions"
+                indexName="idx_assessment_questions_assessment_id">
+
+            <column name="assessment_id"/>
+
+        </createIndex>
+
+        <createIndex
+                tableName="assessment_questions"
+                indexName="idx_assessment_questions_question_id">
+
+            <column name="question_id"/>
+
+        </createIndex>
+
+        <createIndex
+                tableName="submissions"
+                indexName="idx_submissions_assessment_id">
+
+            <column name="assessment_id"/>
+
+        </createIndex>
+
+        <createIndex
+                tableName="submissions"
+                indexName="idx_submissions_candidate_id">
+
+            <column name="candidate_id"/>
+
+        </createIndex>
+
+        <createIndex
+                tableName="candidate_solutions"
+                indexName="idx_candidate_solutions_submission_id">
+
+            <column name="submission_id"/>
+
+        </createIndex>
+
+        <createIndex
+                tableName="candidate_solutions"
+                indexName="idx_candidate_solutions_question_id">
+
+            <column name="question_id"/>
+
+        </createIndex>
+
+    </changeSet>
+
+
+</databaseChangeLog>
