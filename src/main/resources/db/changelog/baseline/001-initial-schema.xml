@@ -8,9 +8,7 @@
             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
 
-    <!-- ========================================================= -->
-    <!-- 001 - ROLES                                               -->
-    <!-- ========================================================= -->
+    <!--  ROLES  -->
 
     <changeSet id="001-create-roles" author="interview-portal">
 
@@ -39,10 +37,7 @@
 
     </changeSet>
 
-
-    <!-- ========================================================= -->
-    <!-- 002 - USERS                                               -->
-    <!-- ========================================================= -->
+    <!-- USERS  -->
 
     <changeSet id="002-create-users" author="interview-portal">
 
@@ -90,9 +85,7 @@
     </changeSet>
 
 
-    <!-- ========================================================= -->
-    <!-- 003 - CANDIDATES                                          -->
-    <!-- ========================================================= -->
+    <!-- CANDIDATES-->
 
     <changeSet id="003-create-candidates" author="interview-portal">
 
@@ -129,9 +122,7 @@
     </changeSet>
 
 
-    <!-- ========================================================= -->
-    <!-- 004 - CATEGORIES                                          -->
-    <!-- ========================================================= -->
+    <!--  CATEGORIES  -->
 
     <changeSet id="004-create-categories" author="interview-portal">
 
@@ -152,9 +143,7 @@
     </changeSet>
 
 
-    <!-- ========================================================= -->
-    <!-- 005 - QUESTIONS                                           -->
-    <!-- ========================================================= -->
+    <!-- QUESTIONS  -->
 
     <changeSet id="005-create-questions" author="interview-portal">
 
@@ -189,9 +178,7 @@
     </changeSet>
 
 
-    <!-- ========================================================= -->
-    <!-- 006 - QUESTION DESIGNATIONS                               -->
-    <!-- ========================================================= -->
+    <!-- QUESTION DESIGNATIONS  -->
 
     <changeSet id="006-create-question-designations"
                author="interview-portal">
@@ -224,9 +211,7 @@
     </changeSet>
 
 
-    <!-- ========================================================= -->
-    <!-- 007 - QUESTION CATEGORIES                                 -->
-    <!-- ========================================================= -->
+    <!--  QUESTION CATEGORIES  -->
 
     <changeSet id="007-create-question-categories"
                author="interview-portal">
@@ -260,9 +245,7 @@
     </changeSet>
 
 
-    <!-- ========================================================= -->
-    <!-- 008 - QUESTION SOLUTIONS                                  -->
-    <!-- ========================================================= -->
+    <!-- QUESTION SOLUTIONS -->
 
     <changeSet id="008-create-question-solutions"
                author="interview-portal">
@@ -307,9 +290,7 @@
     </changeSet>
 
 
-    <!-- ========================================================= -->
-    <!-- 009 - ASSESSMENTS                                         -->
-    <!-- ========================================================= -->
+    <!--  ASSESSMENTS  -->
 
     <changeSet id="009-create-assessments"
                author="interview-portal">
@@ -356,9 +337,7 @@
     </changeSet>
 
 
-    <!-- ========================================================= -->
-    <!-- 010 - ASSESSMENT QUESTIONS                                -->
-    <!-- ========================================================= -->
+    <!-- ASSESSMENT QUESTIONS  -->
 
     <changeSet id="010-create-assessment-questions"
                author="interview-portal">
@@ -398,9 +377,7 @@
     </changeSet>
 
 
-    <!-- ========================================================= -->
-    <!-- 011 - SUBMISSIONS                                         -->
-    <!-- ========================================================= -->
+    <!--  SUBMISSIONS  -->
 
     <changeSet id="011-create-submissions"
                author="interview-portal">
@@ -458,9 +435,7 @@
     </changeSet>
 
 
-    <!-- ========================================================= -->
-    <!-- 012 - CANDIDATE SOLUTIONS                                 -->
-    <!-- ========================================================= -->
+    <!-- CANDIDATE SOLUTIONS   -->
 
     <changeSet id="012-create-candidate-solutions"
                author="interview-portal">
@@ -520,9 +495,7 @@
     </changeSet>
 
 
-    <!-- ========================================================= -->
-    <!-- 013 - GLOBAL EXCEPTIONS                                   -->
-    <!-- ========================================================= -->
+    <!--  GLOBAL EXCEPTIONS  -->
 
     <changeSet id="013-create-global-exceptions"
                author="interview-portal">
@@ -559,9 +532,7 @@
     </changeSet>
 
 
-    <!-- ========================================================= -->
-    <!-- 014 - INDEXES                                             -->
-    <!-- ========================================================= -->
+    <!--  INDEXES  -->
 
     <changeSet id="014-create-indexes"
                author="interview-portal">

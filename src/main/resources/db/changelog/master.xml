@@ -12,8 +12,5 @@
             file="db/changelog/baseline/001-initial-schema.xml"
             context="qa,uat"/>
 
-    <!--
-        Future database changes go here.
-    -->
 
 </databaseChangeLog>
