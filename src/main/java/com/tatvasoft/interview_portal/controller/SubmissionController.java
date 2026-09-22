@@ -4,6 +4,10 @@ import com.tatvasoft.interview_portal.dto.ApiResponse;
 import com.tatvasoft.interview_portal.dto.SubmissionRequest;
 import com.tatvasoft.interview_portal.dto.SubmissionResponse;
 import com.tatvasoft.interview_portal.service.SubmissionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/submissions")
+@Tag(name = "Submission Management", description = "Endpoints for managing candidate test submissions and evaluations")
 public class SubmissionController {
 
     private final SubmissionService service;
@@ -19,6 +24,11 @@ public class SubmissionController {
         this.service = service;
     }
 
+    @Operation(summary = "Create Submission", description = "Creates a new assessment submission record for a candidate.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Submission created successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid submission payload")
+    })
     @PostMapping
     public ResponseEntity<ApiResponse<SubmissionResponse>> create(
             @RequestBody SubmissionRequest request) {
@@ -35,6 +45,10 @@ public class SubmissionController {
         );
     }
 
+    @Operation(summary = "Get All Submissions", description = "Retrieves all candidate submissions.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "List of submissions retrieved successfully")
+    })
     @GetMapping
     public ResponseEntity<ApiResponse<List<SubmissionResponse>>> getAll() {
 
@@ -48,9 +62,14 @@ public class SubmissionController {
         );
     }
 
+    @Operation(summary = "Get Submission by ID", description = "Fetches a specific submission by its ID.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Submission found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Submission not found")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SubmissionResponse>> get(
-            @PathVariable Long id) {
+            @Parameter(description = "Unique ID of the submission", required = true) @PathVariable Long id) {
 
         return ResponseEntity.ok(
                 new ApiResponse<>(
@@ -62,9 +81,15 @@ public class SubmissionController {
         );
     }
 
+    @Operation(summary = "Update Submission", description = "Updates an existing candidate submission.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Submission updated successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid update payload"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Submission not found")
+    })
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SubmissionResponse>> update(
-            @PathVariable Long id,
+            @Parameter(description = "Unique ID of the submission to update", required = true) @PathVariable Long id,
             @RequestBody SubmissionRequest request) {
 
         SubmissionResponse updatedSubmission =
@@ -80,9 +105,14 @@ public class SubmissionController {
         );
     }
 
+    @Operation(summary = "Delete Submission", description = "Deletes a submission by its ID.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Submission deleted successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Submission not found")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> delete(
-            @PathVariable Long id) {
+            @Parameter(description = "Unique ID of the submission to delete", required = true) @PathVariable Long id) {
 
         service.delete(id);
 
