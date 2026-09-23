@@ -30,7 +30,18 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults()) // IMPORTANT
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/users/**", "/questions/**", "/uploads/**").permitAll()
+                        .requestMatchers(
+                                "/auth/**",
+                                "/users/**",
+                                "/questions/**",
+                                "/uploads/**",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs.yaml",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

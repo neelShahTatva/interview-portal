@@ -1,4 +1,4 @@
-package com.tatvasoft.interview_portal.exception;
+package com.tatvasoft.interview_portal.util;
 
 import com.tatvasoft.interview_portal.exception.globalException.CommonException;
 import org.springframework.http.HttpStatus;
