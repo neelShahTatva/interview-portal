@@ -1,15 +1,15 @@
 package com.tatvasoft.interview_portal.controller;
 
-import com.tatvasoft.interview_portal.dto.ApiResponse;
 import com.tatvasoft.interview_portal.dto.AssessmentRequest;
 import com.tatvasoft.interview_portal.dto.AssessmentResponse;
 import com.tatvasoft.interview_portal.dto.CandidateResponse;
 import com.tatvasoft.interview_portal.service.AssessmentService;
-import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,15 +28,16 @@ public class AssessmentController {
 
     @Operation(summary = "Create Assessment", description = "Creates a new assessment with selected questions for a candidate.")
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Assessment created successfully"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid assessment request payload")
+            @ApiResponse(responseCode = "200", description = "Assessment created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid assessment request payload"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping
-    public ResponseEntity<ApiResponse<AssessmentResponse>> create(
+    public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<AssessmentResponse>> create(
             @Valid @RequestBody AssessmentRequest request) {
 
         return ResponseEntity.ok(
-                new ApiResponse<>(
+                new com.tatvasoft.interview_portal.dto.ApiResponse<>(
                         200,
                         true,
                         null,
@@ -47,13 +48,15 @@ public class AssessmentController {
 
     @Operation(summary = "Get All Assessments", description = "Retrieves a list of all assessments.")
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "List of assessments retrieved successfully")
+            @ApiResponse(responseCode = "200", description = "List of assessments retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AssessmentResponse>>> getAll() {
+    public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<List<AssessmentResponse>>> getAll() {
 
         return ResponseEntity.ok(
-                new ApiResponse<>(
+                new com.tatvasoft.interview_portal.dto.ApiResponse<>(
                         200,
                         true,
                         null,
@@ -64,14 +67,16 @@ public class AssessmentController {
 
     @Operation(summary = "Get Available Candidates", description = "Retrieves candidates that are available for assessment assignment.")
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Available candidates retrieved successfully")
+            @ApiResponse(responseCode = "200", description = "Available candidates retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/available-candidates")
-    public ResponseEntity<ApiResponse<List<CandidateResponse>>>
+    public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<List<CandidateResponse>>>
     getAvailableCandidates() {
 
         return ResponseEntity.ok(
-                new ApiResponse<>(
+                new com.tatvasoft.interview_portal.dto.ApiResponse<>(
                         200,
                         true,
                         null,
@@ -82,15 +87,17 @@ public class AssessmentController {
 
     @Operation(summary = "Get Assessment by ID", description = "Fetches assessment details and assigned questions by assessment ID.")
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Assessment details found"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Assessment not found")
+            @ApiResponse(responseCode = "200", description = "Assessment details found"),
+            @ApiResponse(responseCode = "400", description = "Invalid assessment ID supplied"),
+            @ApiResponse(responseCode = "404", description = "Assessment not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<AssessmentResponse>> get(
+    public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<AssessmentResponse>> get(
             @Parameter(description = "Unique ID of the assessment", required = true) @PathVariable Long id) {
 
         return ResponseEntity.ok(
-                new ApiResponse<>(
+                new com.tatvasoft.interview_portal.dto.ApiResponse<>(
                         200,
                         true,
                         null,
@@ -101,17 +108,19 @@ public class AssessmentController {
 
     @Operation(summary = "Deactivate/Delete Assessment", description = "Deactivates an assessment by its ID.")
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Assessment deactivated successfully"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Assessment not found")
+            @ApiResponse(responseCode = "200", description = "Assessment deactivated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid assessment ID supplied"),
+            @ApiResponse(responseCode = "404", description = "Assessment not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> delete(
+    public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<String>> delete(
             @Parameter(description = "Unique ID of the assessment", required = true) @PathVariable Long id) {
 
         service.delete(id);
 
         return ResponseEntity.ok(
-                new ApiResponse<>(
+                new com.tatvasoft.interview_portal.dto.ApiResponse<>(
                         200,
                         true,
                         null,
@@ -122,12 +131,13 @@ public class AssessmentController {
 
     @Operation(summary = "Update Assessment Status", description = "Updates the lifecycle status of an assessment (e.g., PENDING, IN_PROGRESS, COMPLETED).")
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Status updated successfully"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid status value"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Assessment not found")
+            @ApiResponse(responseCode = "200", description = "Status updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid status value or parameters"),
+            @ApiResponse(responseCode = "404", description = "Assessment not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<String>>
+    public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<String>>
     changeStatus(
             @Parameter(description = "Unique ID of the assessment", required = true) @PathVariable Long id,
             @Parameter(description = "New status for the assessment", required = true) @RequestParam String status) {
@@ -138,7 +148,7 @@ public class AssessmentController {
         );
 
         return ResponseEntity.ok(
-                new ApiResponse<>(
+                new com.tatvasoft.interview_portal.dto.ApiResponse<>(
                         200,
                         true,
                         null,

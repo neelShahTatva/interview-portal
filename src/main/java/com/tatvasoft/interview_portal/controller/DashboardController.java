@@ -30,6 +30,7 @@ public class DashboardController {
     @Operation(summary = "Get Dashboard Summary Stats", description = "Retrieves high-level dashboard metrics (counts of candidates, assessments, questions, categories, and AI score averages).")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Dashboard stats retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/stats")
@@ -46,6 +47,7 @@ public class DashboardController {
     @Operation(summary = "Get Assessment Status Breakdown", description = "Retrieves count of assessments grouped by status within the specified number of days.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Assessment status breakdown retrieved"),
+            @ApiResponse(responseCode = "400", description = "Invalid days parameter supplied"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/assessment-status")
@@ -64,6 +66,7 @@ public class DashboardController {
     @Operation(summary = "Get Candidate Pipeline Metrics", description = "Retrieves recruitment pipeline metrics including applied, assessed, evaluated, shortlisted counts and designation breakdowns.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Candidate pipeline metrics retrieved"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/candidate-pipeline")
@@ -80,6 +83,7 @@ public class DashboardController {
     @Operation(summary = "Get Recent Submissions", description = "Retrieves the most recent candidate assessment submissions.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Recent submissions retrieved"),
+            @ApiResponse(responseCode = "400", description = "Invalid limit parameter supplied"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/recent-submissions")
@@ -98,6 +102,7 @@ public class DashboardController {
     @Operation(summary = "Get Questions by Difficulty", description = "Retrieves question distribution across difficulty levels (EASY, MEDIUM, HARD).")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Questions by difficulty retrieved"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/questions-by-difficulty")
@@ -114,6 +119,7 @@ public class DashboardController {
     @Operation(summary = "Get AI Score Distribution", description = "Retrieves the score distribution frequency across all evaluated candidates.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "AI score distribution retrieved"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/ai-score-distribution")
@@ -130,6 +136,7 @@ public class DashboardController {
     @Operation(summary = "Get Recent Activity Log", description = "Retrieves recent system events and actions.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Recent activity retrieved"),
+            @ApiResponse(responseCode = "400", description = "Invalid limit parameter supplied"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/recent-activity")

@@ -24,7 +24,9 @@ public class CommonController {
 
     @Operation(summary = "Get All User Roles", description = "Retrieves the list of all available user roles in the system.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Roles retrieved successfully")
+            @ApiResponse(responseCode = "200", description = "Roles retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/roles")
     public ResponseEntity<List<RoleResponseDto>> getAllRoles(){

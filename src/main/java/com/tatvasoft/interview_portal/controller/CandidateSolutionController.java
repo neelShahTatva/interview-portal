@@ -32,7 +32,9 @@ public class CandidateSolutionController {
     @Operation(summary = "Get Solutions by Submission ID", description = "Retrieves all question solutions, AI scores, and AI feedback for a specific submission.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Solutions retrieved successfully"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Submission not found")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid submission ID supplied"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Submission not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{submissionId}")
     public ResponseEntity<

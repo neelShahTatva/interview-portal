@@ -2,6 +2,7 @@ package com.tatvasoft.interview_portal.controller;
 
 import com.tatvasoft.interview_portal.ai.service.AiSolutionGenerationService;
 import com.tatvasoft.interview_portal.entity.QuestionSolution;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Hidden
 @Tag(name = "AI Testing", description = "Internal/testing endpoints for verifying AI solution generation")
 public class AiTestController {
 

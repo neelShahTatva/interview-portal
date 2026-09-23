@@ -29,7 +29,8 @@ public class UserController {
     @Operation(summary = "Create User", description = "Creates a new user in the system.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "User created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request payload or validation failure")
+            @ApiResponse(responseCode = "400", description = "Invalid request payload or validation failure"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping
     public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<UserResponse>> createUser(
@@ -44,7 +45,9 @@ public class UserController {
 
     @Operation(summary = "Get All Users", description = "Retrieves a list of all registered users.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved user list")
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved user list"),
+            @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping
     public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<List<UserResponse>>> getAllUsers() {
@@ -62,7 +65,9 @@ public class UserController {
     @Operation(summary = "Get User by ID", description = "Fetches a specific user's details by their user ID.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "User details found"),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "400", description = "Invalid user ID supplied"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{id}")
     public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<UserResponse>> getUser(
@@ -81,8 +86,9 @@ public class UserController {
     @Operation(summary = "Update User", description = "Updates details of an existing user by their user ID.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "User updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid update payload"),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "400", description = "Invalid update payload or validation failure"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PutMapping("/{id}")
     public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<UserResponse>> updateUser(
@@ -105,7 +111,9 @@ public class UserController {
     @Operation(summary = "Delete User", description = "Deletes a user by their user ID.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "User deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "400", description = "Invalid user ID supplied"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<String>> deleteUser(
@@ -126,7 +134,9 @@ public class UserController {
     @Operation(summary = "Get Current User Profile", description = "Retrieves profile information of the currently authenticated user.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/profile")
     public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<UserProfileResponse>> getProfile() {
@@ -138,8 +148,9 @@ public class UserController {
     @Operation(summary = "Update Current User Profile", description = "Updates profile details for the currently authenticated user.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Profile updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request payload"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "400", description = "Invalid request payload or validation failure"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PutMapping("/profile")
     public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<UserProfileResponse>> updateProfile(
@@ -153,7 +164,8 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Profile picture uploaded successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid image file"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping(value = "/profile/picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<String>> uploadProfilePicture(

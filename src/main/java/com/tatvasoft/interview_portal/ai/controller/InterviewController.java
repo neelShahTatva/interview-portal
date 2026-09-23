@@ -37,7 +37,8 @@ public class InterviewController {
     @Operation(summary = "Evaluate Single Question Submission", description = "Evaluates candidate code submission against problem statement and reference solution using AI.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Evaluation completed successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request or missing file")
+            @ApiResponse(responseCode = "400", description = "Invalid request or missing file"),
+            @ApiResponse(responseCode = "500", description = "Internal server error during AI evaluation")
     })
     @PostMapping(value = "/evaluate-files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<EvaluationResult> evaluateSingle(
@@ -64,7 +65,8 @@ public class InterviewController {
     @Operation(summary = "Evaluate Multiple Questions", description = "Evaluates all question submissions in a candidate assessment in batch.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Multi-question evaluation completed"),
-            @ApiResponse(responseCode = "400", description = "Invalid parameters or missing question submissions")
+            @ApiResponse(responseCode = "400", description = "Invalid parameters or missing question submissions"),
+            @ApiResponse(responseCode = "500", description = "Internal server error during batch evaluation")
     })
     @PostMapping(value = "/evaluate-multi", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MultiQuestionEvaluationResult> evaluateMultiple(
