@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+            http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="015-remove-audit-user-fks"
+               author="interview-portal">
+
+        <!-- assessment_questions.created_by -> users.id -->
+        <dropForeignKeyConstraint
+                baseTableName="assessment_questions"
+                constraintName="assessment_questions_created_by_fkey"/>
+
+        <!-- candidates.created_by -> users.id -->
+        <dropForeignKeyConstraint
+                baseTableName="candidates"
+                constraintName="candidates_created_by_fkey"/>
+
+        <!-- candidates.updated_by -> users.id -->
+        <dropForeignKeyConstraint
+                baseTableName="candidates"
+                constraintName="candidates_updated_by_fkey"/>
+
+        <!-- assessments.created_by -> users.id -->
+        <dropForeignKeyConstraint
+                baseTableName="assessments"
+                constraintName="assessments_created_by_fkey"/>
+
+        <!-- assessments.updated_by -> users.id -->
+        <dropForeignKeyConstraint
+                baseTableName="assessments"
+                constraintName="assessments_updated_by_fkey"/>
+
+    </changeSet>
+
+</databaseChangeLog>
