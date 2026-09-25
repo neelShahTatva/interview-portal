@@ -35,6 +35,36 @@
                 baseTableName="assessments"
                 constraintName="assessments_updated_by_fkey"/>
 
+        <!-- questions.created_by -> users.id -->
+        <dropForeignKeyConstraint
+                baseTableName="questions"
+                constraintName="questions_created_by_fkey"/>
+
+        <!-- questions.updated_by -> users.id -->
+        <dropForeignKeyConstraint
+                baseTableName="questions"
+                constraintName="questions_updated_by_fkey"/>
+
+        <!-- submissions.created_by -> users.id -->
+        <dropForeignKeyConstraint
+                baseTableName="submissions"
+                constraintName="submissions_created_by_fkey"/>
+
+        <!-- submissions.updated_by -> users.id -->
+        <dropForeignKeyConstraint
+                baseTableName="submissions"
+                constraintName="submissions_updated_by_fkey"/>
+
+        <!-- users.created_by -> users.id -->
+        <dropForeignKeyConstraint
+                baseTableName="users"
+                constraintName="users_created_by_fkey"/>
+
+        <!-- users.updated_by -> users.id -->
+        <dropForeignKeyConstraint
+                baseTableName="users"
+                constraintName="users_updated_by_fkey"/>
+
     </changeSet>
 
 </databaseChangeLog>
