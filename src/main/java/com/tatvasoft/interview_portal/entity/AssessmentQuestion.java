@@ -19,6 +19,15 @@ public class AssessmentQuestion {
     @Column(name = "assessment_id")
     private Integer assessmentId;
 
+     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "assessment_id",
+            referencedColumnName = "id",
+            insertable = false,
+            updatable = false
+    )
+    private Assessment assessment;
+
     @Column(name = "question_id")
     private Integer questionId;
 

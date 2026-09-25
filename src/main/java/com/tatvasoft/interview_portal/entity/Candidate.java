@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "candidates")
@@ -44,4 +46,19 @@ public class Candidate {
     @Column(name = "updated_by")
     private Long updatedBy;
 
+    @OneToMany(
+            mappedBy = "candidate",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<Assessment> assessments = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "candidate",
+            cascade = CascadeType.REMOVE,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true
+    )
+    private List<Submission> submissions = new ArrayList<>();
 }

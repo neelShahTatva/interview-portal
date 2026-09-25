@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "assessments")
@@ -17,6 +19,16 @@ public class Assessment {
 
     @Column(name = "candidate_id")
     private Long candidateId;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "candidate_id",
+            referencedColumnName = "id",
+            insertable = false,
+            updatable = false
+    )
+    private Candidate candidate;
 
     @Column(name = "title")
     private String title;
@@ -47,4 +59,12 @@ public class Assessment {
     @Column(name = "updated_by")
     private Long updatedBy;
 
+      @OneToMany(
+            mappedBy = "assessment",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<AssessmentQuestion> assessmentQuestions =
+            new ArrayList<>();
 }

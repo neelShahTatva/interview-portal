@@ -19,6 +19,15 @@ public class CandidateSolution {
     @Column(name = "submission_id")
     private Long submissionId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "submission_id",
+            referencedColumnName = "id",
+            insertable = false,
+            updatable = false
+    )
+    private Submission submission;
+
     @Column(name = "question_id")
     private Long questionId;
 
