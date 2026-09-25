@@ -12,5 +12,8 @@
             file="db/changelog/baseline/001-initial-schema.xml"
             context="qa,uat"/>
 
+    <include
+            file="db/changelog/changes/002-remove-audit-user-fks.xml"/>
+
 
 </databaseChangeLog>
