@@ -1,10 +1,6 @@
 package com.tatvasoft.interview_portal.controller;
 
-import com.tatvasoft.interview_portal.dto.ApiResponse;
-import com.tatvasoft.interview_portal.dto.CandidateEvaluationResponse;
-import com.tatvasoft.interview_portal.dto.CandidateRequest;
-import com.tatvasoft.interview_portal.dto.CandidateResponse;
-import com.tatvasoft.interview_portal.dto.CandidateSolutionResponse;
+import com.tatvasoft.interview_portal.dto.*;
 import com.tatvasoft.interview_portal.service.CandidateService;
 import com.tatvasoft.interview_portal.service.CandidateSolutionService;
 import jakarta.validation.Valid;
@@ -59,15 +55,20 @@ public class CandidateController {
 
     // DELETE CANDIDATE
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> delete(@PathVariable Long id,
-                                                      @RequestParam
-                                                      @NotBlank(message = "Comment is required")
-                                                      @Size(max = 255, message = "Comment must not exceed 255 characters")
-                                                      String comment) {
+    public ResponseEntity<ApiResponse<String>> delete(
+            @PathVariable Long id,
+            @Valid @RequestBody DeleteCandidateRequestDTO request) {
 
-        candidateService.delete(id, comment);
+        candidateService.delete(id, request.getComment());
 
-        return ResponseEntity.ok(new ApiResponse<>(200, true, null, "Candidate deleted successfully"));
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        200,
+                        true,
+                        null,
+                        "Candidate deleted successfully"
+                )
+        );
     }
 
     @GetMapping("/candidate/{candidateId}")
