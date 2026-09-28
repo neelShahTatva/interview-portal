@@ -14,18 +14,17 @@ import com.tatvasoft.interview_portal.util.SecurityUtil;
 import org.springframework.stereotype.Service;
 import static com.tatvasoft.interview_portal.exception.ExceptionUtil.buildErrorResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class CandidateServiceImpl implements CandidateService {
 
     private final CandidateRepository candidateRepository;
+    private final CandidateBackupRepository candidateBackupRepository;
     private final AssessmentRepository assessmentRepository;
     private final UserRepository userRepository;
     private final SubmissionRepository submissionRepository;
@@ -34,8 +33,9 @@ public class CandidateServiceImpl implements CandidateService {
     private final CandidateSolutionRepository candidateSolutionRepository;
     private final QuestionSolutionRepository questionSolutionRepository;
 
-    public CandidateServiceImpl(CandidateRepository candidateRepository, UserRepository userRepository, SubmissionRepository submissionRepository, AssessmentRepository assessmentRepository, QuestionsRepository questionsRepository, AssessmentQuestionRepository assessmentQuestionRepository, CandidateSolutionRepository candidateSolutionRepository, QuestionSolutionRepository questionSolutionRepository) {
+    public CandidateServiceImpl(CandidateRepository candidateRepository, CandidateBackupRepository candidateBackupRepository, UserRepository userRepository, SubmissionRepository submissionRepository, AssessmentRepository assessmentRepository, QuestionsRepository questionsRepository, AssessmentQuestionRepository assessmentQuestionRepository, CandidateSolutionRepository candidateSolutionRepository, QuestionSolutionRepository questionSolutionRepository) {
         this.candidateRepository = candidateRepository;
+        this.candidateBackupRepository = candidateBackupRepository;
         this.userRepository = userRepository;
         this.submissionRepository = submissionRepository;
         this.assessmentRepository = assessmentRepository;
@@ -118,10 +118,37 @@ public class CandidateServiceImpl implements CandidateService {
     }
 
     @Override
-    public void delete(Long id) {
+    @Transactional
+    public void delete(Long id, String comment) {
 
         Candidate candidate = candidateRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Candidate not found"));
 
+        String username = SecurityUtil.getCurrentUsername();
+        User currentUser = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Logged in user not found"));
+
+        LocalDateTime lastAppearedAt = candidate.getAssessments().stream()
+                .map(Assessment::getCompletedAt)
+                .filter(Objects::nonNull)
+                .max(LocalDateTime::compareTo)
+                .orElse(null);
+
+        CandidateBackup candidateBackup = CandidateBackup.builder()
+                .candidateId(candidate.getId())
+                .firstName(candidate.getFirstName())
+                .lastName(candidate.getLastName())
+                .email(candidate.getEmail())
+                .experience(candidate.getExperience())
+                .designation(candidate.getDesignation())
+                .isActive(candidate.getIsActive())
+                .createdAt(candidate.getCreatedAt())
+                .createdBy(candidate.getCreatedBy())
+                .comment(comment)
+                .lastAppearedAt(lastAppearedAt)
+                .deletedAt(LocalDateTime.now())
+                .deletedBy(currentUser.getId())
+                .build();
+
+        candidateBackupRepository.save(candidateBackup);
         candidateRepository.delete(candidate);
     }
 

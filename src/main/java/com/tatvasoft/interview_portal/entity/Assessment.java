@@ -67,4 +67,12 @@ public class Assessment {
     )
     private List<AssessmentQuestion> assessmentQuestions =
             new ArrayList<>();
+
+    @OneToOne(
+            mappedBy = "assessment",
+            cascade = CascadeType.REMOVE,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true
+    )
+    private Submission submissions;
 }

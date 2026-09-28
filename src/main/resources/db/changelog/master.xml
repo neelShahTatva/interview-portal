@@ -15,5 +15,7 @@
     <include
             file="db/changelog/changes/002-remove-audit-user-fks.xml"/>
 
+    <include
+            file="db/changelog/changes/003-creating-candidate-backup-table.xml"/>
 
 </databaseChangeLog>

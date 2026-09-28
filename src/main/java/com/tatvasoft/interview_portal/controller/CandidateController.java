@@ -8,6 +8,8 @@ import com.tatvasoft.interview_portal.dto.CandidateSolutionResponse;
 import com.tatvasoft.interview_portal.service.CandidateService;
 import com.tatvasoft.interview_portal.service.CandidateSolutionService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,9 +59,13 @@ public class CandidateController {
 
     // DELETE CANDIDATE
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<String>> delete(@PathVariable Long id,
+                                                      @RequestParam
+                                                      @NotBlank(message = "Comment is required")
+                                                      @Size(max = 255, message = "Comment must not exceed 255 characters")
+                                                      String comment) {
 
-        candidateService.delete(id);
+        candidateService.delete(id, comment);
 
         return ResponseEntity.ok(new ApiResponse<>(200, true, null, "Candidate deleted successfully"));
     }
