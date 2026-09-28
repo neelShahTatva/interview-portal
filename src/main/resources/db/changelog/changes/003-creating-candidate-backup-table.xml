@@ -31,7 +31,7 @@
 
             <column name="created_by" type="BIGINT"/>
 
-            <column name="comment" type="VARCHAR(255)"/>
+            <column name="comment" type="VARCHAR(100)"/>
 
             <column name="last_appeared_at" type="TIMESTAMP"/>
 
