@@ -1,17 +1,18 @@
 package com.tatvasoft.interview_portal.entity;
 
+import com.tatvasoft.interview_portal.enums.ActionPerformed;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "candidate_backup")
+@Table(name = "candidate_history")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CandidateBackup {
+public class CandidateHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -40,6 +41,12 @@ public class CandidateBackup {
     @Column(name = "created_by")
     private Long createdBy;
 
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "updated_by")
+    private Long updatedBy;
+
     private String comment;
 
     @Column(name = "last_appeared_at")
@@ -50,4 +57,13 @@ public class CandidateBackup {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    private String result;
+
+    @Column(name = "ai_score")
+    private Integer aiScore;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "action_performed")
+    private ActionPerformed actionPerformed;
 }

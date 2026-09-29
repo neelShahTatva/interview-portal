@@ -7,8 +7,8 @@
             http://www.liquibase.org/xml/ns/dbchangelog
             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
-    <changeSet id="016-create-candidate-backup" author="interview-portal">
-        <createTable tableName="candidate_backup">
+    <changeSet id="016-create-candidate-history" author="interview-portal">
+        <createTable tableName="candidate_history">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -31,6 +31,10 @@
 
             <column name="created_by" type="BIGINT"/>
 
+            <column name="updated_at" type="TIMESTAMP"/>
+
+            <column name="updated_by" type="BIGINT"/>
+
             <column name="comment" type="VARCHAR(100)"/>
 
             <column name="last_appeared_at" type="TIMESTAMP"/>
@@ -38,6 +42,12 @@
             <column name="deleted_by" type="BIGINT"/>
 
             <column name="deleted_at" type="TIMESTAMP"/>
+
+            <column name="result" type="VARCHAR(255)"/>
+
+            <column name="ai_score" type="INTEGER"/>
+
+            <column name="action_performed" type="VARCHAR(20)"/>
 
         </createTable>
     </changeSet>

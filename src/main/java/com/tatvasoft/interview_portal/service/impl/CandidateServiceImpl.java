@@ -7,6 +7,7 @@ import com.tatvasoft.interview_portal.dto.CandidateRequest;
 import com.tatvasoft.interview_portal.dto.CandidateResponse;
 import com.tatvasoft.interview_portal.dto.QuestionUploadDto;
 import com.tatvasoft.interview_portal.entity.*;
+import com.tatvasoft.interview_portal.enums.ActionPerformed;
 import com.tatvasoft.interview_portal.exception.ResourceNotFoundException;
 import com.tatvasoft.interview_portal.repository.*;
 import com.tatvasoft.interview_portal.service.CandidateService;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 public class CandidateServiceImpl implements CandidateService {
 
     private final CandidateRepository candidateRepository;
-    private final CandidateBackupRepository candidateBackupRepository;
+    private final CandidateHistoryRepository candidateHistoryRepository;
     private final AssessmentRepository assessmentRepository;
     private final UserRepository userRepository;
     private final SubmissionRepository submissionRepository;
@@ -33,9 +34,9 @@ public class CandidateServiceImpl implements CandidateService {
     private final CandidateSolutionRepository candidateSolutionRepository;
     private final QuestionSolutionRepository questionSolutionRepository;
 
-    public CandidateServiceImpl(CandidateRepository candidateRepository, CandidateBackupRepository candidateBackupRepository, UserRepository userRepository, SubmissionRepository submissionRepository, AssessmentRepository assessmentRepository, QuestionsRepository questionsRepository, AssessmentQuestionRepository assessmentQuestionRepository, CandidateSolutionRepository candidateSolutionRepository, QuestionSolutionRepository questionSolutionRepository) {
+    public CandidateServiceImpl(CandidateRepository candidateRepository, CandidateHistoryRepository candidateHistoryRepository, UserRepository userRepository, SubmissionRepository submissionRepository, AssessmentRepository assessmentRepository, QuestionsRepository questionsRepository, AssessmentQuestionRepository assessmentQuestionRepository, CandidateSolutionRepository candidateSolutionRepository, QuestionSolutionRepository questionSolutionRepository) {
         this.candidateRepository = candidateRepository;
-        this.candidateBackupRepository = candidateBackupRepository;
+        this.candidateHistoryRepository = candidateHistoryRepository;
         this.userRepository = userRepository;
         this.submissionRepository = submissionRepository;
         this.assessmentRepository = assessmentRepository;
@@ -126,13 +127,20 @@ public class CandidateServiceImpl implements CandidateService {
         String username = SecurityUtil.getCurrentUsername();
         User currentUser = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Logged in user not found"));
 
-        LocalDateTime lastAppearedAt = candidate.getAssessments().stream()
-                .map(Assessment::getCompletedAt)
-                .filter(Objects::nonNull)
-                .max(LocalDateTime::compareTo)
+        Assessment latestAssessment = candidate.getAssessments().stream()
+                .filter(assessment -> assessment.getCompletedAt() != null)
+                .max(Comparator.comparing(Assessment::getCompletedAt))
                 .orElse(null);
 
-        CandidateBackup candidateBackup = CandidateBackup.builder()
+        Submission submission = null;
+        LocalDateTime lastAppearedAt = null;
+
+        if(latestAssessment != null){
+            lastAppearedAt = latestAssessment.getCompletedAt();
+            submission = latestAssessment.getSubmissions();
+        }
+
+        CandidateHistory candidateHistory = CandidateHistory.builder()
                 .candidateId(candidate.getId())
                 .firstName(candidate.getFirstName())
                 .lastName(candidate.getLastName())
@@ -142,13 +150,18 @@ public class CandidateServiceImpl implements CandidateService {
                 .isActive(candidate.getIsActive())
                 .createdAt(candidate.getCreatedAt())
                 .createdBy(candidate.getCreatedBy())
+                .updatedAt(candidate.getUpdatedAt())
+                .updatedBy(candidate.getUpdatedBy())
                 .comment(comment)
                 .lastAppearedAt(lastAppearedAt)
                 .deletedAt(LocalDateTime.now())
                 .deletedBy(currentUser.getId())
+                .result(submission != null ? submission.getOutput(): null)
+                .aiScore(submission != null ? submission.getAiScore(): null)
+                .actionPerformed(ActionPerformed.DELETE)
                 .build();
 
-        candidateBackupRepository.save(candidateBackup);
+        candidateHistoryRepository.save(candidateHistory);
         candidateRepository.delete(candidate);
     }
 
