@@ -22,6 +22,7 @@ public interface UserMapper {
     @Mapping(target = "role", source = "role")
     @Mapping(target = "createdBy", source = "currentUserId")
     @Mapping(target = "createdAt", expression = "java(LocalDateTime.now())")
+    @Mapping(target = "isDeleted", constant = "false")
     User toEntity(UserRequest request, String encodedPassword, Role role, Long currentUserId);
 
     @Mapping(target = "roleId", source = "role.id")

@@ -18,4 +18,10 @@
     <include
             file="db/changelog/changes/003-creating-candidate-history-table.xml"/>
 
+    <include
+           file="db/changelog/changes/004-remove-unique-constraints-in-users.xml"/>
+
+    <include
+           file="db/changelog/changes/005-add-soft-delete-columns.xml"/>
+
 </databaseChangeLog>

@@ -33,6 +33,10 @@ public class Question {
     private LocalDateTime updatedAt;
 
     private Long updatedBy = null;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
     @OneToMany(
             mappedBy = "question",
             cascade = CascadeType.ALL,

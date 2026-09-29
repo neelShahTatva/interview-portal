@@ -29,22 +29,34 @@ public class UserValidationServiceImpl
     public void validateUsernameAvailable(
             String username) {
 
-        if (userRepository.existsByUsername(username)) {
-            throw new UserAlreadyExistsException(
-                    USERNAME_ALREADY_EXISTS
-            );
-        }
+        userRepository
+                .findByUsername(username)
+                .ifPresent(existingUser -> {
+
+                    if (existingUser.getIsDeleted().equals(false)) {
+
+                        throw new UserAlreadyExistsException(
+                                USERNAME_ALREADY_EXISTS
+                        );
+                    }
+                });
     }
 
     @Override
     public void validateEmailAvailable(
             String email) {
 
-        if (userRepository.findByEmail(email).isPresent()) {
-            throw new UserAlreadyExistsException(
-                    EMAIL_ALREADY_IN_USE
-            );
-        }
+        userRepository
+                .findByEmail(email)
+                .ifPresent(existingUser -> {
+
+                    if (existingUser.getIsDeleted().equals(false)) {
+
+                        throw new UserAlreadyExistsException(
+                                EMAIL_ALREADY_IN_USE
+                        );
+                    }
+                });
     }
 
     @Override
@@ -58,7 +70,7 @@ public class UserValidationServiceImpl
 
                     if (!existingUser
                             .getId()
-                            .equals(currentUserId)) {
+                            .equals(currentUserId) && existingUser.getIsDeleted().equals(false)) {
 
                         throw new UserAlreadyExistsException(
                                 USERNAME_ALREADY_EXISTS
@@ -78,7 +90,7 @@ public class UserValidationServiceImpl
 
                     if (!existingUser
                             .getId()
-                            .equals(currentUserId)) {
+                            .equals(currentUserId) && existingUser.getIsDeleted().equals(false)) {
 
                         throw new UserAlreadyExistsException(
                                 EMAIL_ALREADY_IN_USE

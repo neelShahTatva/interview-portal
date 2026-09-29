@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+            http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="018-add-soft-delete-columns" author="interview-portal">
+       <addColumn tableName="users">
+           <column name="is_deleted" type="BOOLEAN" defaultValueBoolean="false">
+               <constraints nullable="false"/>
+           </column>
+       </addColumn>
+
+       <createIndex tableName="users" indexName="idx_users_is_deleted">
+           <column name="is_deleted"/>
+       </createIndex>
+
+        <addColumn tableName="questions">
+            <column name="is_deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <createIndex tableName="questions" indexName="idx_questions_is_deleted">
+            <column name="is_deleted"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

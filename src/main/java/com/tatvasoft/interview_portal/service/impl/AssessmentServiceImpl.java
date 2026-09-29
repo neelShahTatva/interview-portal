@@ -234,12 +234,6 @@ if (!activeForCandidate.isEmpty()) {
         assessment.setUpdatedBy(1L);
 
         repository.save(assessment);
-
-        assessmentQuestionRepository
-                .deleteByAssessmentId(
-                        id.intValue()
-                );
-
     }
 
     private AssessmentResponse map(

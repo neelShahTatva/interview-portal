@@ -7,6 +7,7 @@ import com.tatvasoft.interview_portal.enums.QuestionDesignationType;
 import com.tatvasoft.interview_portal.enums.QuestionDifficultyLevel;
 import com.tatvasoft.interview_portal.enums.QuestionUploadHeader;
 import com.tatvasoft.interview_portal.exception.BulkUploadValidationException;
+import com.tatvasoft.interview_portal.exception.ResourceNotFoundException;
 import com.tatvasoft.interview_portal.repository.*;
 import com.tatvasoft.interview_portal.service.QuestionService;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,7 @@ public class QuestionServiceImpl implements QuestionService {
     public List<QuestionResponse> getAllQuestions() {
         return questionRepository.findAll()
                 .stream()
+                .filter(question -> !question.getIsDeleted())
                 .map(this::mapToQuestionResponse)
                 .collect(Collectors.toList());
     }
@@ -171,13 +173,21 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
+    @Transactional
     public void deleteQuestion(Long id) {
 
-        if (!questionRepository.existsById(id)) {
-            throw new RuntimeException("Question not found");
-        }
+        Question question = questionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Question not found"));
 
-        questionRepository.deleteById(id);
+        question.setIsDeleted(true);
+        question.setUpdatedAt(LocalDateTime.now());
+
+        String username = SecurityUtil.getCurrentUsername();
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Logged in user not found"));
+
+        question.setUpdatedBy(currentUser.getId());
+        questionRepository.save(question);
     }
 
     @Override
