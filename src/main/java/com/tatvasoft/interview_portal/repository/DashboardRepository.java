@@ -22,9 +22,6 @@ public interface DashboardRepository extends JpaRepository<Candidate, Long> {
     @Query(value = "SELECT COUNT(*) FROM assessments", nativeQuery = true)
     long countTotalAssessments();
 
-    @Query(value = "SELECT COUNT(*) FROM assessments WHERE status = 'IN_PROGRESS' AND is_active = true", nativeQuery = true)
-    long countInProgressAssessments();
-
     @Query(value = "SELECT COUNT(*) FROM assessments WHERE status = 'PENDING' AND is_active = true", nativeQuery = true)
     long countPendingAssessments();
 
@@ -55,6 +52,7 @@ public interface DashboardRepository extends JpaRepository<Candidate, Long> {
             FROM assessments
             WHERE created_at >= NOW() - INTERVAL '1 day' * :days
               AND is_active = true
+              AND status IN ('PENDING', 'COMPLETED')
             GROUP BY status
             """, nativeQuery = true)
     List<Object[]> findAssessmentStatusBreakdown(@Param("days") int days);
@@ -135,16 +133,6 @@ public interface DashboardRepository extends JpaRepository<Candidate, Long> {
              FROM assessments a
              JOIN candidates c ON c.id = a.candidate_id
              WHERE a.status = 'COMPLETED' AND a.completed_at IS NOT NULL)
-
-            UNION ALL
-
-            (SELECT 'ASSESSMENT_STARTED',
-                    CONCAT('Assessment started by ', c.first_name, ' ', c.last_name),
-                    CONCAT(c.first_name, ' ', c.last_name),
-                    a.started_at
-             FROM assessments a
-             JOIN candidates c ON c.id = a.candidate_id
-             WHERE a.status = 'IN_PROGRESS' AND a.started_at IS NOT NULL)
 
             UNION ALL
 

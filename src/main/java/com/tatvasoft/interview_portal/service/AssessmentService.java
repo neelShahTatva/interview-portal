@@ -18,7 +18,5 @@ public interface AssessmentService {
 
     void delete(Long id);
 
-    void changeStatus(Long id, String status);
-
     List<CandidateResponse> getAvailableCandidates();
 }

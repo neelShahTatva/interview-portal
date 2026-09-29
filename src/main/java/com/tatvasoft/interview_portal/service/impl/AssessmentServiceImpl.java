@@ -60,15 +60,6 @@ if (!activeForCandidate.isEmpty()) {
         );
     }
 
-    boolean hasInProgress = activeForCandidate.stream()
-            .anyMatch(a -> AssessmentStatus.IN_PROGRESS.name().equals(a.getStatus()));
-
-    if (hasInProgress) {
-        throw new RuntimeException(
-                "Candidate already has an assessment in progress."
-        );
-    }
-
     Assessment latestCompleted = activeForCandidate.stream()
             .filter(a -> AssessmentStatus.COMPLETED.name().equals(a.getStatus()))
             .filter(a -> a.getCompletedAt() != null)
@@ -345,24 +336,6 @@ if (!activeForCandidate.isEmpty()) {
                                         s.getSolutionCode()))
                         .toList()
         );
-    }
-
-    @Override
-    public void changeStatus(Long id, String status) {
-
-        Assessment assessment = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Assessment not found"));
-
-        LocalDateTime now = LocalDateTime.now();
-
-        assessment.setStatus(status);
-        assessment.setUpdatedAt(now);
-
-        if (AssessmentStatus.COMPLETED.name().equalsIgnoreCase(status)) {
-            assessment.setCompletedAt(now);
-        }
-
-        repository.save(assessment);
     }
 
     @Override

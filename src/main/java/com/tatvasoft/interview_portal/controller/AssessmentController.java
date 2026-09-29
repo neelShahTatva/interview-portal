@@ -106,25 +106,4 @@ public class AssessmentController {
                 )
         );
     }
-
-    @PostMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<String>>
-    changeStatus(
-            @PathVariable Long id,
-            @RequestParam String status) {
-
-        service.changeStatus(
-                id,
-                status
-        );
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(
-                        200,
-                        true,
-                        null,
-                        "Status updated successfully"
-                )
-        );
-    }
 }

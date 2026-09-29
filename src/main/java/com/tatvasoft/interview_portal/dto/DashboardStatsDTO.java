@@ -15,7 +15,6 @@ public class DashboardStatsDTO {
     private long newCandidatesThisMonth;
 
     private long totalAssessments;
-    private long inProgressAssessments;
     private long pendingAssessments;
     private long completedAssessments;
 
