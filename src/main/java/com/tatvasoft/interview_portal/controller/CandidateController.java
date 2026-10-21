@@ -1,12 +1,14 @@
 package com.tatvasoft.interview_portal.controller;
 
-import com.tatvasoft.interview_portal.dto.ApiResponse;
 import com.tatvasoft.interview_portal.dto.CandidateEvaluationResponse;
 import com.tatvasoft.interview_portal.dto.CandidateRequest;
 import com.tatvasoft.interview_portal.dto.CandidateResponse;
-import com.tatvasoft.interview_portal.dto.CandidateSolutionResponse;
 import com.tatvasoft.interview_portal.service.CandidateService;
-import com.tatvasoft.interview_portal.service.CandidateSolutionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/candidates")
+@Tag(name = "Candidate Management", description = "Endpoints for managing candidates, candidate profiles, and evaluation summaries")
 public class CandidateController {
 
     private final CandidateService candidateService;
@@ -23,49 +26,89 @@ public class CandidateController {
         this.candidateService = candidateService;
     }
 
-    // CREATE CANDIDATE
+    @Operation(summary = "Create Candidate", description = "Creates a new candidate profile in the system.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Candidate created successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation failed or invalid payload"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PostMapping
-    public ResponseEntity<ApiResponse<CandidateResponse>> create(@Valid @RequestBody CandidateRequest request) {
+    public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<CandidateResponse>> create(@Valid @RequestBody CandidateRequest request) {
 
         CandidateResponse candidate = candidateService.create(request);
 
-        return ResponseEntity.ok(new ApiResponse<>(200, true, null, candidate));
+        return ResponseEntity.ok(new com.tatvasoft.interview_portal.dto.ApiResponse<>(200, true, null, candidate));
     }
 
-    // GET ALL CANDIDATES
+    @Operation(summary = "Get All Candidates", description = "Retrieves a list of all candidates.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of candidates retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CandidateResponse>>> getAll() {
+    public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<List<CandidateResponse>>> getAll() {
 
-        return ResponseEntity.ok(new ApiResponse<>(200, true, null, candidateService.getAll()));
+        return ResponseEntity.ok(new com.tatvasoft.interview_portal.dto.ApiResponse<>(200, true, null, candidateService.getAll()));
     }
 
-    // GET CANDIDATE BY ID
+    @Operation(summary = "Get Candidate by ID", description = "Fetches details of a specific candidate by their candidate ID.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Candidate found"),
+            @ApiResponse(responseCode = "400", description = "Invalid candidate ID supplied"),
+            @ApiResponse(responseCode = "404", description = "Candidate not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CandidateResponse>> getById(@PathVariable Long id) {
+    public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<CandidateResponse>> getById(
+            @Parameter(description = "Unique ID of the candidate", required = true) @PathVariable Long id) {
 
-        return ResponseEntity.ok(new ApiResponse<>(200, true, null, candidateService.getById(id)));
+        return ResponseEntity.ok(new com.tatvasoft.interview_portal.dto.ApiResponse<>(200, true, null, candidateService.getById(id)));
     }
 
-    // UPDATE CANDIDATE
+    @Operation(summary = "Update Candidate", description = "Updates candidate profile details.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Candidate updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation failed or invalid payload"),
+            @ApiResponse(responseCode = "404", description = "Candidate not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CandidateResponse>> update(@PathVariable Long id, @Valid @RequestBody CandidateRequest request) {
+    public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<CandidateResponse>> update(
+            @Parameter(description = "Unique ID of the candidate to update", required = true) @PathVariable Long id,
+            @Valid @RequestBody CandidateRequest request) {
 
         CandidateResponse updatedCandidate = candidateService.update(id, request);
 
-        return ResponseEntity.ok(new ApiResponse<>(200, true, null, updatedCandidate));
+        return ResponseEntity.ok(new com.tatvasoft.interview_portal.dto.ApiResponse<>(200, true, null, updatedCandidate));
     }
 
-    // DELETE CANDIDATE
+    @Operation(summary = "Delete Candidate", description = "Deletes a candidate by their candidate ID.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Candidate deleted successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid candidate ID supplied"),
+            @ApiResponse(responseCode = "404", description = "Candidate not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> delete(@PathVariable Long id) {
+    public ResponseEntity<com.tatvasoft.interview_portal.dto.ApiResponse<String>> delete(
+            @Parameter(description = "Unique ID of the candidate to delete", required = true) @PathVariable Long id) {
 
         candidateService.delete(id);
 
-        return ResponseEntity.ok(new ApiResponse<>(200, true, null, "Candidate deleted successfully"));
+        return ResponseEntity.ok(new com.tatvasoft.interview_portal.dto.ApiResponse<>(200, true, null, "Candidate deleted successfully"));
     }
 
+    @Operation(summary = "Get Candidate Evaluation Summary", description = "Retrieves full evaluation and question results for a candidate's assessment.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Evaluation details retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid candidate ID supplied"),
+            @ApiResponse(responseCode = "404", description = "Candidate evaluation not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/candidate/{candidateId}")
-    public ResponseEntity<CandidateEvaluationResponse> getCandidateEvaluation(@PathVariable Long candidateId) {
+    public ResponseEntity<CandidateEvaluationResponse> getCandidateEvaluation(
+            @Parameter(description = "Unique ID of the candidate", required = true) @PathVariable Long candidateId) {
 
         return ResponseEntity.ok(candidateService.getCandidateEvaluation(candidateId));
     }

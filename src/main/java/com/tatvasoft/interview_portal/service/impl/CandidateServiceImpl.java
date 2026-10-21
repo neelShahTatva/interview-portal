@@ -12,7 +12,7 @@ import com.tatvasoft.interview_portal.repository.*;
 import com.tatvasoft.interview_portal.service.CandidateService;
 import com.tatvasoft.interview_portal.util.SecurityUtil;
 import org.springframework.stereotype.Service;
-import static com.tatvasoft.interview_portal.exception.ExceptionUtil.buildErrorResponse;
+import static com.tatvasoft.interview_portal.util.ExceptionUtil.buildErrorResponse;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
