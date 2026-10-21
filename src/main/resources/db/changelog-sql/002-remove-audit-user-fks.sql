@@ -1,7 +1,6 @@
 --liquibase formatted sql
 
 --changeset interview-portal:015-remove-audit-user-fks
--- IF EXISTS makes this safe on a brand-new database, where these audit FKs were never created.
 ALTER TABLE "assessment_questions" DROP CONSTRAINT IF EXISTS "assessment_questions_created_by_fkey";
 ALTER TABLE "candidates"           DROP CONSTRAINT IF EXISTS "candidates_created_by_fkey";
 ALTER TABLE "candidates"           DROP CONSTRAINT IF EXISTS "candidates_updated_by_fkey";
