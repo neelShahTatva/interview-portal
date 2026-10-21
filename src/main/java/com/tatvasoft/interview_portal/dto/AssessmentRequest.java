@@ -13,7 +13,7 @@ public class AssessmentRequest {
     @Schema(description = "Candidate unique ID", example = "1")
     private Long candidateId;
 
-    @Schema(description = "Title of the assessment", example = "Java Developer Assessment")
+    @Schema(description = "Title of the assessment", example = "Java Developer Assessment", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Assessment title is required")
     @Size(
             min = 3,
@@ -26,7 +26,7 @@ public class AssessmentRequest {
     )
     private String title;
 
-    @Schema(description = "Assessment time limit in minutes", example = "60")
+    @Schema(description = "Assessment time limit in minutes", example = "60", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Assessment time limit is required")
     @Min(
             value = 30,
