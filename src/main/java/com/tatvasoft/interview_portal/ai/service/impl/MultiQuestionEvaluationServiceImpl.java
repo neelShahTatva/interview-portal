@@ -14,7 +14,6 @@ import com.tatvasoft.interview_portal.repository.AssessmentRepository;
 import com.tatvasoft.interview_portal.repository.CandidateSolutionRepository;
 import com.tatvasoft.interview_portal.repository.QuestionsRepository;
 import com.tatvasoft.interview_portal.repository.SubmissionRepository;
-import com.tatvasoft.interview_portal.util.JwtUtil;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

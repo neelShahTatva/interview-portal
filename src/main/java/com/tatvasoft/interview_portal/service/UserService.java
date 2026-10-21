@@ -5,7 +5,6 @@ import com.tatvasoft.interview_portal.entity.User;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 
 public interface UserService {
     UserResponse createUser(UserRequest request);
