@@ -14,7 +14,7 @@ public interface AssessmentService {
 
     AssessmentResponse getById(Long id);
 
-//    AssessmentResponse update(Long id, AssessmentRequest request);
+    // AssessmentResponse update(Long id, AssessmentRequest request);
 
     void delete(Long id);
 

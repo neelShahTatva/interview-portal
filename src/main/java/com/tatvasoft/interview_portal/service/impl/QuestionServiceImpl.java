@@ -33,7 +33,6 @@ public class QuestionServiceImpl implements QuestionService {
     private final QuestionsRepository questionRepository;
     private final CategoryRepository categoryRepository;
     private final QuestionDesignationRepository questionDesignationRepository;
-    private final QuestionSolutionRepository questionSolutionRepository;
     private final QuestionSelectionService questionSelectionService;
     private final UserRepository userRepository;
     private final CandidateRepository candidateRepository;
@@ -238,7 +237,7 @@ public class QuestionServiceImpl implements QuestionService {
                 throw new BulkUploadValidationException("Excel file is missing required columns: Title, Description, Difficulty, Estimated Time, Is Active, Categories, Designations, Java Solution.");
             }
 
-            String[] requiredHeaders = QuestionUploadHeader.getRequiredHeaders();
+            // String[] requiredHeaders = QuestionUploadHeader.getRequiredHeaders();
 
             // Build header -> column index map
 
