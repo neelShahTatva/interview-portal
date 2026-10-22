@@ -53,7 +53,7 @@ INSERT INTO "categories" ("is_active", "name") VALUES
     (TRUE, 'Dynamic Programming'),
     (TRUE, 'Trees & Graphs'),
     (TRUE, 'System Design'),
-    (TRUE, 'Java Core'),
+    (TRUE, 'Java Core')
 
 --changeset interview-portal:005-create-questions context:qa,uat
 CREATE TABLE "questions" (
