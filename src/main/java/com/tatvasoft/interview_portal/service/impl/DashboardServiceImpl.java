@@ -26,7 +26,6 @@ public class DashboardServiceImpl implements DashboardService {
                 .totalCandidates(dashboardRepository.countTotalCandidates())
                 .newCandidatesThisMonth(dashboardRepository.countNewCandidatesThisMonth())
                 .totalAssessments(dashboardRepository.countTotalAssessments())
-                .inProgressAssessments(dashboardRepository.countInProgressAssessments())
                 .pendingAssessments(dashboardRepository.countPendingAssessments())
                 .completedAssessments(dashboardRepository.countCompletedAssessments())
                 .totalQuestions(dashboardRepository.countTotalQuestions())

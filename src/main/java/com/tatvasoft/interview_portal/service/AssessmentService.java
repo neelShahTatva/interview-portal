@@ -14,11 +14,9 @@ public interface AssessmentService {
 
     AssessmentResponse getById(Long id);
 
-//    AssessmentResponse update(Long id, AssessmentRequest request);
+    // AssessmentResponse update(Long id, AssessmentRequest request);
 
     void delete(Long id);
-
-    void changeStatus(Long id, String status);
 
     List<CandidateResponse> getAvailableCandidates();
 }
