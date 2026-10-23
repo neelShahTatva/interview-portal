@@ -3,6 +3,7 @@ package com.tatvasoft.interview_portal.service.impl;
 import com.tatvasoft.interview_portal.ai.service.QuestionSelectionService;
 import com.tatvasoft.interview_portal.dto.*;
 import com.tatvasoft.interview_portal.entity.*;
+import com.tatvasoft.interview_portal.enums.AssessmentStatus;
 import com.tatvasoft.interview_portal.enums.QuestionDesignationType;
 import com.tatvasoft.interview_portal.enums.QuestionDifficultyLevel;
 import com.tatvasoft.interview_portal.enums.QuestionUploadHeader;
@@ -19,6 +20,9 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.Locale;
@@ -665,6 +669,85 @@ public class QuestionServiceImpl implements QuestionService {
                                         "Candidate not found"
                                 ));
 
+        if(candidate != null && candidate.getAssessments() != null && !candidate.getAssessments().isEmpty()) {
+            boolean hasPending = candidate.getAssessments().stream()
+                    .anyMatch(assessment -> AssessmentStatus.PENDING.name().equals(assessment.getStatus()));
+
+            if (hasPending) {
+                throw new RuntimeException(
+                        "Candidate already has a pending assessment."
+                );
+            }
+
+            Assessment latestCompleted = candidate.getAssessments().stream()
+                    .filter(assessment -> AssessmentStatus.COMPLETED.name().equals(assessment.getStatus()))
+                    .filter(assessment -> assessment.getCompletedAt() != null)
+                    .max(Comparator.comparing(Assessment::getCompletedAt))
+                    .orElse(null);
+
+            if (latestCompleted != null) {
+
+                LocalDateTime eligibleDate =
+                        latestCompleted.getCompletedAt().plusMonths(6);
+
+                LocalDateTime now = LocalDateTime.now();
+
+                if (now.isBefore(eligibleDate)) {
+
+                    Period period = Period.between(
+                            now.toLocalDate(),
+                            eligibleDate.toLocalDate()
+                    );
+
+                    int months = period.getMonths();
+                    int days = period.getDays();
+
+                    StringBuilder message = new StringBuilder(
+                            "Candidate is not eligible for a new assessment. You will be eligible after "
+                    );
+
+                    if (months > 0) {
+                        message.append(months)
+                                .append(months == 1 ? " month" : " months");
+                    }
+
+                    if (days > 0) {
+                        if (months > 0) {
+                            message.append(" and ");
+                        }
+
+                        message.append(days)
+                                .append(days == 1 ? " day" : " days");
+                    }
+
+                    if (months == 0 && days == 0) {
+                        long hours = ChronoUnit.HOURS.between(now, eligibleDate);
+                        long minutes = ChronoUnit.MINUTES.between(now.plusHours(hours), eligibleDate);
+
+                        if (hours > 0) {
+                            appendDuration(message, hours, "hour");
+
+                            if (minutes > 0) {
+                                message.append(" and ");
+                                appendDuration(message, minutes, "minute");
+                            }
+                        } else if (minutes > 0) {
+                            appendDuration(message, minutes, "minute");
+                        } else {
+                            DateTimeFormatter formatter =
+                                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+                            message.append(eligibleDate.format(formatter));
+                        }
+                    }
+
+                    message.append(".");
+
+                    throw new RuntimeException(message.toString());
+                }
+            }
+        }
+
         List<Question> availableQuestions =
                 questionDesignationRepository
                         .findQuestionsByDesignation(
@@ -719,5 +802,15 @@ public class QuestionServiceImpl implements QuestionService {
         );
 
         return response;
+    }
+
+    private void appendDuration(StringBuilder message, long value, String unit) {
+        message.append(value)
+                .append(" ")
+                .append(unit);
+
+        if (value != 1) {
+            message.append("s");
+        }
     }
 }
