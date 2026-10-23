@@ -707,8 +707,7 @@ public class QuestionServiceImpl implements QuestionService {
                     );
 
                     if (months > 0) {
-                        message.append(months)
-                                .append(months == 1 ? " month" : " months");
+                        appendDuration(message, months, "month");
                     }
 
                     if (days > 0) {
@@ -716,8 +715,7 @@ public class QuestionServiceImpl implements QuestionService {
                             message.append(" and ");
                         }
 
-                        message.append(days)
-                                .append(days == 1 ? " day" : " days");
+                        appendDuration(message, days, "day");
                     }
 
                     if (months == 0 && days == 0) {
