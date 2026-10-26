@@ -147,6 +147,7 @@ CREATE TABLE "submissions" (
 );
 ALTER TABLE "submissions" ADD CONSTRAINT "fk_submissions_assessment" FOREIGN KEY ("assessment_id") REFERENCES "assessments" ("id");
 ALTER TABLE "submissions" ADD CONSTRAINT "fk_submissions_candidate" FOREIGN KEY ("candidate_id") REFERENCES "candidates" ("id");
+ALTER TABLE "submissions" ADD CONSTRAINT "submissions_assessment_id_key" UNIQUE ("assessment_id");
 
 --changeset interview-portal:012-create-candidate-solutions context:qa,uat
 CREATE TABLE "candidate_solutions" (
