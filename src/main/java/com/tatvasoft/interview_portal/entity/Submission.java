@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "submissions")
@@ -18,11 +20,29 @@ public class Submission {
     @Column(name = "assessment_id")
     private Long assessmentId;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "assessment_id",
+            referencedColumnName = "id",
+            insertable = false,
+            updatable = false
+    )
+    private Assessment assessment;
+
     @Column(name = "reference_file_id")
     private Long referenceFileId;
 
     @Column(name = "candidate_id")
     private Long candidateId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "candidate_id",
+            referencedColumnName = "id",
+            insertable = false,
+            updatable = false
+    )
+    private Candidate candidate;
 
     private String code;
 
@@ -51,4 +71,13 @@ public class Submission {
 
     @Column(name = "updated_by")
     private Long updatedBy;
+
+        @OneToMany(
+            mappedBy = "submission",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<CandidateSolution> candidateSolutions =
+            new ArrayList<>();
 }
