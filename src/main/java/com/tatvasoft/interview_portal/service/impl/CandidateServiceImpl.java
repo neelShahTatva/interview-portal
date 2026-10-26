@@ -170,7 +170,7 @@ public class CandidateServiceImpl implements CandidateService {
             throw new IllegalStateException(
                     "Candidate deletion failed. History was not saved.");
         }
-        candidateHistoryRepository.save(candidateHistory);
+        candidateHistoryRepository.saveAndFlush(candidateHistory);
     }
 
     private CandidateResponse map(Candidate candidate) {
