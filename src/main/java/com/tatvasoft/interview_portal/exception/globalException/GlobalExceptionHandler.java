@@ -759,7 +759,7 @@ public class GlobalExceptionHandler {
                     userRepository != null) {
 
                 return userRepository
-                        .findByUsername(username)
+                        .findByUsernameAndIsDeletedFalse(username)
                         .map(User::getId)
                         .orElse(null);
             }

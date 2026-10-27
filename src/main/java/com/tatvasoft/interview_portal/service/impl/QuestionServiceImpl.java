@@ -16,13 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Locale;
+
 import com.tatvasoft.interview_portal.util.SecurityUtil;
 
 @Slf4j
@@ -59,7 +58,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public QuestionResponse addQuestion(QuestionRequest request) {
         String username = SecurityUtil.getCurrentUsername();
-        User currentUser = userRepository.findByUsername(username)
+        User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new RuntimeException("Logged in user not found"));
 
         Question q = new Question();
@@ -105,10 +104,10 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public QuestionResponse updateQuestion(Long id, QuestionRequest request) {
         String username = SecurityUtil.getCurrentUsername();
-        User currentUser = userRepository.findByUsername(username)
+        User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new RuntimeException("Logged in user not found"));
 
-        Question q = questionRepository.findById(id)
+        Question q = questionRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Question not found"));
 
         q.setTitle(request.getTitle());
@@ -175,14 +174,14 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional
     public void deleteQuestion(Long id) {
 
-        Question question = questionRepository.findById(id)
+        Question question = questionRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Question not found"));
 
         question.setIsDeleted(true);
         question.setUpdatedAt(LocalDateTime.now());
 
         String username = SecurityUtil.getCurrentUsername();
-        User currentUser = userRepository.findByUsername(username)
+        User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new RuntimeException("Logged in user not found"));
 
         question.setUpdatedBy(currentUser.getId());
@@ -191,7 +190,7 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public QuestionResponse getQuestion(Long id) {
-        Question q = questionRepository.findById(id)
+        Question q = questionRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Question not found"));
         return mapToQuestionResponse(q);
     }
@@ -213,7 +212,7 @@ public class QuestionServiceImpl implements QuestionService {
 
         String username = SecurityUtil.getCurrentUsername();
 
-        User currentUser = userRepository.findByUsername(username)
+        User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() ->
                         new RuntimeException("Logged in user not found"));
 

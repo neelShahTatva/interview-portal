@@ -37,7 +37,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmailAndIsDeletedFalse(request.getEmail())
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -61,7 +61,7 @@ public class AuthServiceImpl implements AuthService {
             throw new TokenValidationException("Invalid refresh token");
         }
 
-        User user = userRepository.findByUsername(jwtUtil.extractUsername(refreshToken))
+        User user = userRepository.findByUsernameAndIsDeletedFalse(jwtUtil.extractUsername(refreshToken))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return Map.of("accessToken", jwtUtil.generateAccessToken(user));
@@ -69,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void processForgotPassword(ForgotPasswordRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmailAndIsDeletedFalse(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         String token = UUID.randomUUID().toString();

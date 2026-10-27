@@ -30,15 +30,11 @@ public class UserValidationServiceImpl
             String username) {
 
         userRepository
-                .findByUsername(username)
+                .findByUsernameAndIsDeletedFalse(username)
                 .ifPresent(existingUser -> {
-
-                    if (existingUser.getIsDeleted().equals(false)) {
-
                         throw new UserAlreadyExistsException(
                                 USERNAME_ALREADY_EXISTS
                         );
-                    }
                 });
     }
 
@@ -47,15 +43,11 @@ public class UserValidationServiceImpl
             String email) {
 
         userRepository
-                .findByEmail(email)
+                .findByEmailAndIsDeletedFalse(email)
                 .ifPresent(existingUser -> {
-
-                    if (existingUser.getIsDeleted().equals(false)) {
-
                         throw new UserAlreadyExistsException(
                                 EMAIL_ALREADY_IN_USE
                         );
-                    }
                 });
     }
 
@@ -65,12 +57,12 @@ public class UserValidationServiceImpl
             Long currentUserId) {
 
         userRepository
-                .findByUsername(username)
+                .findByUsernameAndIsDeletedFalse(username)
                 .ifPresent(existingUser -> {
 
                     if (!existingUser
                             .getId()
-                            .equals(currentUserId) && existingUser.getIsDeleted().equals(false)) {
+                            .equals(currentUserId)) {
 
                         throw new UserAlreadyExistsException(
                                 USERNAME_ALREADY_EXISTS
@@ -85,12 +77,12 @@ public class UserValidationServiceImpl
             Long currentUserId) {
 
         userRepository
-                .findByEmail(email)
+                .findByEmailAndIsDeletedFalse(email)
                 .ifPresent(existingUser -> {
 
                     if (!existingUser
                             .getId()
-                            .equals(currentUserId) && existingUser.getIsDeleted().equals(false)) {
+                            .equals(currentUserId)) {
 
                         throw new UserAlreadyExistsException(
                                 EMAIL_ALREADY_IN_USE
@@ -104,7 +96,7 @@ public class UserValidationServiceImpl
             Long userId) {
 
         return userRepository
-                .findById(userId)
+                .findByIdAndIsDeletedFalse(userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "User not found"
@@ -116,7 +108,7 @@ public class UserValidationServiceImpl
             String username) {
 
         return userRepository
-                .findByUsername(username)
+                .findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "User not found with username: "

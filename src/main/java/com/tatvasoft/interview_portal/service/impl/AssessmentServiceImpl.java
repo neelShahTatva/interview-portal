@@ -39,7 +39,7 @@ public class AssessmentServiceImpl implements AssessmentService {
 
         String username = SecurityUtil.getCurrentUsername();
 
-        User currentUser = userRepository.findByUsername(username)
+        User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new RuntimeException("Logged in user not found"));
                 // Find active assessments for the candidate and decide eligibility
     List<Assessment> activeForCandidate =
@@ -194,7 +194,7 @@ if (!activeForCandidate.isEmpty()) {
 //
 //        String username = SecurityUtil.getCurrentUsername();
 //
-//        User currentUser = userRepository.findByUsername(username)
+//        User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
 //                .orElseThrow(() ->
 //                        new RuntimeException("Logged in user not found"));
 //
