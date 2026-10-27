@@ -1,5 +1,6 @@
 package com.tatvasoft.interview_portal.service.impl;
 
+import com.tatvasoft.interview_portal.ai.service.AiQuestionSimilarityService;
 import com.tatvasoft.interview_portal.ai.service.QuestionSelectionService;
 import com.tatvasoft.interview_portal.dto.*;
 import com.tatvasoft.interview_portal.entity.*;
@@ -7,10 +8,12 @@ import com.tatvasoft.interview_portal.enums.QuestionDesignationType;
 import com.tatvasoft.interview_portal.enums.QuestionDifficultyLevel;
 import com.tatvasoft.interview_portal.enums.QuestionUploadHeader;
 import com.tatvasoft.interview_portal.exception.BulkUploadValidationException;
+import com.tatvasoft.interview_portal.exception.globalException.CommonException;
 import com.tatvasoft.interview_portal.repository.*;
 import com.tatvasoft.interview_portal.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +36,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final CategoryRepository categoryRepository;
     private final QuestionDesignationRepository questionDesignationRepository;
     private final QuestionSelectionService questionSelectionService;
+    private final AiQuestionSimilarityService aiQuestionSimilarityService;
     private final UserRepository userRepository;
     private final CandidateRepository candidateRepository;
 
@@ -59,6 +63,11 @@ public class QuestionServiceImpl implements QuestionService {
         String username = SecurityUtil.getCurrentUsername();
         User currentUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Logged in user not found"));
+
+        List<Question> existingQuestions = questionRepository.findByIsDeletedFalse();
+        if (aiQuestionSimilarityService.isSimilarQuestion(request.getTitle(), request.getDescription(), existingQuestions)) {
+            throw new CommonException(HttpStatus.BAD_REQUEST, "Change the question as similar questin is present");
+        }
 
         Question q = new Question();
         q.setTitle(request.getTitle());
@@ -108,6 +117,14 @@ public class QuestionServiceImpl implements QuestionService {
 
         Question q = questionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Question not found"));
+
+        List<Question> existingQuestions = questionRepository.findByIsDeletedFalse()
+                .stream()
+                .filter(existing -> !existing.getId().equals(id))
+                .collect(Collectors.toList());
+        if (aiQuestionSimilarityService.isSimilarQuestion(request.getTitle(), request.getDescription(), existingQuestions)) {
+            throw new CommonException(HttpStatus.BAD_REQUEST, "Change the question as similar questin is present");
+        }
 
         q.setTitle(request.getTitle());
         q.setDescription(request.getDescription());

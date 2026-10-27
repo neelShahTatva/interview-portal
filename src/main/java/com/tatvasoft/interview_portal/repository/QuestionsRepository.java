@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface QuestionsRepository extends JpaRepository<Question, Long> {
     List<Question> findByIdIn(List<Long> ids);
+    List<Question> findByIsDeletedFalse();
 }
