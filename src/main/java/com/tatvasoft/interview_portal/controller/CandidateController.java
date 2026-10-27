@@ -86,7 +86,7 @@ public class CandidateController {
                                 updatedCandidate));
         }
 
-        @Operation(summary = "Delete Candidate", description = "Deletes a candidate by their candidate ID.")
+        @Operation(summary = "Delete Candidate",description = "Deletes a candidate by their candidate ID. " + "A comment explaining the deletion is required.")
         @ApiResponses({
                         @ApiResponse(responseCode = "200", description = "Candidate deleted successfully"),
                         @ApiResponse(responseCode = "400", description = "Invalid candidate ID supplied"),

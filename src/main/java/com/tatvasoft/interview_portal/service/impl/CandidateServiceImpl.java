@@ -161,8 +161,16 @@ public class CandidateServiceImpl implements CandidateService {
                 .actionPerformed(ActionPerformed.DELETE)
                 .build();
 
-        candidateHistoryRepository.save(candidateHistory);
         candidateRepository.delete(candidate);
+        candidateRepository.flush();
+
+        boolean candidateExists = candidateRepository.existsById(id);
+
+        if (candidateExists) {
+            throw new IllegalStateException(
+                    "Candidate deletion failed. History was not saved.");
+        }
+        candidateHistoryRepository.saveAndFlush(candidateHistory);
     }
 
     private CandidateResponse map(Candidate candidate) {
