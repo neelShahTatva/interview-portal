@@ -16,5 +16,5 @@ public interface CandidateService {
 
     CandidateResponse update(Long id, CandidateRequest request);
     CandidateEvaluationResponse getCandidateEvaluation(Long candidateId);
-    void delete(Long id);
+    void delete(Long id, String comment);
 }

@@ -7,6 +7,7 @@ import com.tatvasoft.interview_portal.dto.CandidateRequest;
 import com.tatvasoft.interview_portal.dto.CandidateResponse;
 import com.tatvasoft.interview_portal.dto.QuestionUploadDto;
 import com.tatvasoft.interview_portal.entity.*;
+import com.tatvasoft.interview_portal.enums.ActionPerformed;
 import com.tatvasoft.interview_portal.exception.ResourceNotFoundException;
 import com.tatvasoft.interview_portal.repository.*;
 import com.tatvasoft.interview_portal.service.CandidateService;
@@ -14,18 +15,17 @@ import com.tatvasoft.interview_portal.util.SecurityUtil;
 import org.springframework.stereotype.Service;
 import static com.tatvasoft.interview_portal.util.ExceptionUtil.buildErrorResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class CandidateServiceImpl implements CandidateService {
 
     private final CandidateRepository candidateRepository;
+    private final CandidateHistoryRepository candidateHistoryRepository;
     private final AssessmentRepository assessmentRepository;
     private final UserRepository userRepository;
     private final SubmissionRepository submissionRepository;
@@ -34,8 +34,9 @@ public class CandidateServiceImpl implements CandidateService {
     private final CandidateSolutionRepository candidateSolutionRepository;
     private final QuestionSolutionRepository questionSolutionRepository;
 
-    public CandidateServiceImpl(CandidateRepository candidateRepository, UserRepository userRepository, SubmissionRepository submissionRepository, AssessmentRepository assessmentRepository, QuestionsRepository questionsRepository, AssessmentQuestionRepository assessmentQuestionRepository, CandidateSolutionRepository candidateSolutionRepository, QuestionSolutionRepository questionSolutionRepository) {
+    public CandidateServiceImpl(CandidateRepository candidateRepository, CandidateHistoryRepository candidateHistoryRepository, UserRepository userRepository, SubmissionRepository submissionRepository, AssessmentRepository assessmentRepository, QuestionsRepository questionsRepository, AssessmentQuestionRepository assessmentQuestionRepository, CandidateSolutionRepository candidateSolutionRepository, QuestionSolutionRepository questionSolutionRepository) {
         this.candidateRepository = candidateRepository;
+        this.candidateHistoryRepository = candidateHistoryRepository;
         this.userRepository = userRepository;
         this.submissionRepository = submissionRepository;
         this.assessmentRepository = assessmentRepository;
@@ -118,11 +119,58 @@ public class CandidateServiceImpl implements CandidateService {
     }
 
     @Override
-    public void delete(Long id) {
+    @Transactional
+    public void delete(Long id, String comment) {
 
         Candidate candidate = candidateRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Candidate not found"));
 
+        String username = SecurityUtil.getCurrentUsername();
+        User currentUser = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Logged in user not found"));
+
+        Assessment latestAssessment = candidate.getAssessments().stream()
+                .filter(assessment -> assessment.getCompletedAt() != null)
+                .max(Comparator.comparing(Assessment::getCompletedAt))
+                .orElse(null);
+
+        Submission submission = null;
+        LocalDateTime lastAppearedAt = null;
+
+        if(latestAssessment != null){
+            lastAppearedAt = latestAssessment.getCompletedAt();
+            submission = latestAssessment.getSubmissions();
+        }
+
+        CandidateHistory candidateHistory = CandidateHistory.builder()
+                .candidateId(candidate.getId())
+                .firstName(candidate.getFirstName())
+                .lastName(candidate.getLastName())
+                .email(candidate.getEmail())
+                .experience(candidate.getExperience())
+                .designation(candidate.getDesignation())
+                .isActive(candidate.getIsActive())
+                .createdAt(candidate.getCreatedAt())
+                .createdBy(candidate.getCreatedBy())
+                .updatedAt(candidate.getUpdatedAt())
+                .updatedBy(candidate.getUpdatedBy())
+                .comment(comment)
+                .lastAppearedAt(lastAppearedAt)
+                .deletedAt(LocalDateTime.now())
+                .deletedBy(currentUser.getId())
+                .result(submission != null ? submission.getOutput(): null)
+                .aiScore(submission != null ? submission.getAiScore(): null)
+                .actionPerformed(ActionPerformed.DELETE)
+                .build();
+
         candidateRepository.delete(candidate);
+        candidateRepository.flush();
+
+        boolean candidateExists = candidateRepository.existsById(id);
+
+        if (candidateExists) {
+            throw new IllegalStateException(
+                    "Candidate deletion failed. History was not saved.");
+        }
+        candidateHistoryRepository.saveAndFlush(candidateHistory);
     }
 
     private CandidateResponse map(Candidate candidate) {
