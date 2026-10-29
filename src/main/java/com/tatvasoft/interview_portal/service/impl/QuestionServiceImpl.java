@@ -7,6 +7,7 @@ import com.tatvasoft.interview_portal.enums.AssessmentStatus;
 import com.tatvasoft.interview_portal.enums.QuestionDesignationType;
 import com.tatvasoft.interview_portal.enums.QuestionDifficultyLevel;
 import com.tatvasoft.interview_portal.enums.QuestionUploadHeader;
+import com.tatvasoft.interview_portal.exception.AssessmentException;
 import com.tatvasoft.interview_portal.exception.BulkUploadValidationException;
 import com.tatvasoft.interview_portal.repository.*;
 import com.tatvasoft.interview_portal.service.QuestionService;
@@ -674,7 +675,8 @@ public class QuestionServiceImpl implements QuestionService {
                     .anyMatch(assessment -> AssessmentStatus.PENDING.name().equals(assessment.getStatus()));
 
             if (hasPending) {
-                throw new RuntimeException(
+                throw new AssessmentException(
+                        "ASSESSMENT_ALREADY_PENDING",
                         "Candidate already has a pending assessment."
                 );
             }
@@ -741,7 +743,10 @@ public class QuestionServiceImpl implements QuestionService {
 
                     message.append(".");
 
-                    throw new RuntimeException(message.toString());
+                    throw new AssessmentException(
+                            "ASSESSMENT_NOT_ELIGIBLE",
+                            message.toString()
+                    );
                 }
             }
         }
