@@ -29,22 +29,26 @@ public class UserValidationServiceImpl
     public void validateUsernameAvailable(
             String username) {
 
-        if (userRepository.existsByUsername(username)) {
-            throw new UserAlreadyExistsException(
-                    USERNAME_ALREADY_EXISTS
-            );
-        }
+        userRepository
+                .findByUsernameAndIsDeletedFalse(username)
+                .ifPresent(existingUser -> {
+                        throw new UserAlreadyExistsException(
+                                USERNAME_ALREADY_EXISTS
+                        );
+                });
     }
 
     @Override
     public void validateEmailAvailable(
             String email) {
 
-        if (userRepository.findByEmail(email).isPresent()) {
-            throw new UserAlreadyExistsException(
-                    EMAIL_ALREADY_IN_USE
-            );
-        }
+        userRepository
+                .findByEmailAndIsDeletedFalse(email)
+                .ifPresent(existingUser -> {
+                        throw new UserAlreadyExistsException(
+                                EMAIL_ALREADY_IN_USE
+                        );
+                });
     }
 
     @Override
@@ -53,7 +57,7 @@ public class UserValidationServiceImpl
             Long currentUserId) {
 
         userRepository
-                .findByUsername(username)
+                .findByUsernameAndIsDeletedFalse(username)
                 .ifPresent(existingUser -> {
 
                     if (!existingUser
@@ -73,7 +77,7 @@ public class UserValidationServiceImpl
             Long currentUserId) {
 
         userRepository
-                .findByEmail(email)
+                .findByEmailAndIsDeletedFalse(email)
                 .ifPresent(existingUser -> {
 
                     if (!existingUser
@@ -92,7 +96,7 @@ public class UserValidationServiceImpl
             Long userId) {
 
         return userRepository
-                .findById(userId)
+                .findByIdAndIsDeletedFalse(userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "User not found"
@@ -104,7 +108,7 @@ public class UserValidationServiceImpl
             String username) {
 
         return userRepository
-                .findByUsername(username)
+                .findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "User not found with username: "

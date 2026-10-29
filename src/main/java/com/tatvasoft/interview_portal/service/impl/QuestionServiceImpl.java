@@ -4,11 +4,13 @@ import com.tatvasoft.interview_portal.ai.service.AiQuestionSimilarityService;
 import com.tatvasoft.interview_portal.ai.service.QuestionSelectionService;
 import com.tatvasoft.interview_portal.dto.*;
 import com.tatvasoft.interview_portal.entity.*;
+import com.tatvasoft.interview_portal.enums.AssessmentStatus;
 import com.tatvasoft.interview_portal.enums.QuestionDesignationType;
 import com.tatvasoft.interview_portal.enums.QuestionDifficultyLevel;
 import com.tatvasoft.interview_portal.enums.QuestionUploadHeader;
+import com.tatvasoft.interview_portal.exception.AssessmentException;
 import com.tatvasoft.interview_portal.exception.BulkUploadValidationException;
-import com.tatvasoft.interview_portal.exception.globalException.CommonException;
+import com.tatvasoft.interview_portal.exception.ResourceNotFoundException;
 import com.tatvasoft.interview_portal.repository.*;
 import com.tatvasoft.interview_portal.service.QuestionService;
 import lombok.RequiredArgsConstructor;
@@ -18,13 +20,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Locale;
+
 import com.tatvasoft.interview_portal.util.SecurityUtil;
 
 @Slf4j
@@ -54,6 +58,7 @@ public class QuestionServiceImpl implements QuestionService {
     public List<QuestionResponse> getAllQuestions() {
         return questionRepository.findAll()
                 .stream()
+                .filter(question -> !question.getIsDeleted())
                 .map(this::mapToQuestionResponse)
                 .collect(Collectors.toList());
     }
@@ -61,7 +66,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public QuestionResponse addQuestion(QuestionRequest request) {
         String username = SecurityUtil.getCurrentUsername();
-        User currentUser = userRepository.findByUsername(username)
+        User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new RuntimeException("Logged in user not found"));
 
         List<Question> existingQuestions = questionRepository.findByIsDeletedFalse();
@@ -112,10 +117,10 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public QuestionResponse updateQuestion(Long id, QuestionRequest request) {
         String username = SecurityUtil.getCurrentUsername();
-        User currentUser = userRepository.findByUsername(username)
+        User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new RuntimeException("Logged in user not found"));
 
-        Question q = questionRepository.findById(id)
+        Question q = questionRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Question not found"));
 
         List<Question> existingQuestions = questionRepository.findByIsDeletedFalse()
@@ -187,18 +192,26 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
+    @Transactional
     public void deleteQuestion(Long id) {
 
-        if (!questionRepository.existsById(id)) {
-            throw new RuntimeException("Question not found");
-        }
+        Question question = questionRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Question not found"));
 
-        questionRepository.deleteById(id);
+        question.setIsDeleted(true);
+        question.setUpdatedAt(LocalDateTime.now());
+
+        String username = SecurityUtil.getCurrentUsername();
+        User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
+                .orElseThrow(() -> new RuntimeException("Logged in user not found"));
+
+        question.setUpdatedBy(currentUser.getId());
+        questionRepository.save(question);
     }
 
     @Override
     public QuestionResponse getQuestion(Long id) {
-        Question q = questionRepository.findById(id)
+        Question q = questionRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Question not found"));
         return mapToQuestionResponse(q);
     }
@@ -220,7 +233,7 @@ public class QuestionServiceImpl implements QuestionService {
 
         String username = SecurityUtil.getCurrentUsername();
 
-        User currentUser = userRepository.findByUsername(username)
+        User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() ->
                         new RuntimeException("Logged in user not found"));
 
@@ -682,6 +695,89 @@ public class QuestionServiceImpl implements QuestionService {
                                         "Candidate not found"
                                 ));
 
+        if(candidate != null && candidate.getAssessments() != null && !candidate.getAssessments().isEmpty()) {
+            boolean hasPending = candidate.getAssessments().stream()
+                    .filter(Assessment::getIsActive)
+                    .anyMatch(assessment -> AssessmentStatus.PENDING.name().equals(assessment.getStatus()));
+
+            if (hasPending) {
+                throw new AssessmentException(
+                        "ASSESSMENT_ALREADY_PENDING",
+                        "Candidate already has a pending assessment."
+                );
+            }
+
+            Assessment latestCompleted = candidate.getAssessments().stream()
+                    .filter(assessment -> assessment.getIsActive()
+                            && AssessmentStatus.COMPLETED.name().equals(assessment.getStatus())
+                            && assessment.getCompletedAt() != null)
+                    .max(Comparator.comparing(Assessment::getCompletedAt))
+                    .orElse(null);
+
+            if (latestCompleted != null) {
+
+                LocalDateTime eligibleDate =
+                        latestCompleted.getCompletedAt().plusMonths(6);
+
+                LocalDateTime now = LocalDateTime.now();
+
+                if (now.isBefore(eligibleDate)) {
+
+                    Period period = Period.between(
+                            now.toLocalDate(),
+                            eligibleDate.toLocalDate()
+                    );
+
+                    int months = period.getMonths();
+                    int days = period.getDays();
+
+                    StringBuilder message = new StringBuilder(
+                            "Candidate is not eligible for a new assessment. You will be eligible after "
+                    );
+
+                    if (months > 0) {
+                        appendDuration(message, months, "month");
+                    }
+
+                    if (days > 0) {
+                        if (months > 0) {
+                            message.append(" and ");
+                        }
+
+                        appendDuration(message, days, "day");
+                    }
+
+                    if (months == 0 && days == 0) {
+                        long hours = ChronoUnit.HOURS.between(now, eligibleDate);
+                        long minutes = ChronoUnit.MINUTES.between(now.plusHours(hours), eligibleDate);
+
+                        if (hours > 0) {
+                            appendDuration(message, hours, "hour");
+
+                            if (minutes > 0) {
+                                message.append(" and ");
+                                appendDuration(message, minutes, "minute");
+                            }
+                        } else if (minutes > 0) {
+                            appendDuration(message, minutes, "minute");
+                        } else {
+                            DateTimeFormatter formatter =
+                                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+                            message.append(eligibleDate.format(formatter));
+                        }
+                    }
+
+                    message.append(".");
+
+                    throw new AssessmentException(
+                            "ASSESSMENT_NOT_ELIGIBLE",
+                            message.toString()
+                    );
+                }
+            }
+        }
+
         List<Question> availableQuestions =
                 questionDesignationRepository
                         .findQuestionsByDesignation(
@@ -736,5 +832,15 @@ public class QuestionServiceImpl implements QuestionService {
         );
 
         return response;
+    }
+
+    private void appendDuration(StringBuilder message, long value, String unit) {
+        message.append(value)
+                .append(" ")
+                .append(unit);
+
+        if (value != 1) {
+            message.append("s");
+        }
     }
 }

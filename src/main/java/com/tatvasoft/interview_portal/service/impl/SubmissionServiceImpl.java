@@ -40,7 +40,7 @@ public class SubmissionServiceImpl implements SubmissionService {
 
         String username = SecurityUtil.getCurrentUsername();
 
-        User currentUser = userRepository.findByUsername(username)
+        User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() ->
                         new RuntimeException("Logged in user not found"));
 
@@ -89,7 +89,7 @@ public class SubmissionServiceImpl implements SubmissionService {
 
         String username = SecurityUtil.getCurrentUsername();
 
-        User currentUser = userRepository.findByUsername(username)
+        User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() ->
                         new RuntimeException("Logged in user not found"));
 

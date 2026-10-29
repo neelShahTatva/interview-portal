@@ -39,7 +39,7 @@ public class AssessmentServiceImpl implements AssessmentService {
 
         String username = SecurityUtil.getCurrentUsername();
 
-        User currentUser = userRepository.findByUsername(username)
+        User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new RuntimeException("Logged in user not found"));
                 // Find active assessments for the candidate and decide eligibility
     List<Assessment> activeForCandidate =
@@ -56,15 +56,6 @@ if (!activeForCandidate.isEmpty()) {
     if (hasPending) {
         throw new RuntimeException(
                 "Candidate already has a pending assessment."
-        );
-    }
-
-    boolean hasInProgress = activeForCandidate.stream()
-            .anyMatch(a -> AssessmentStatus.IN_PROGRESS.name().equals(a.getStatus()));
-
-    if (hasInProgress) {
-        throw new RuntimeException(
-                "Candidate already has an assessment in progress."
         );
     }
 
@@ -203,7 +194,7 @@ if (!activeForCandidate.isEmpty()) {
 //
 //        String username = SecurityUtil.getCurrentUsername();
 //
-//        User currentUser = userRepository.findByUsername(username)
+//        User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
 //                .orElseThrow(() ->
 //                        new RuntimeException("Logged in user not found"));
 //
@@ -242,12 +233,6 @@ if (!activeForCandidate.isEmpty()) {
         assessment.setUpdatedBy(1L);
 
         repository.save(assessment);
-
-        assessmentQuestionRepository
-                .deleteByAssessmentId(
-                        id.intValue()
-                );
-
     }
 
     private AssessmentResponse map(
@@ -344,24 +329,6 @@ if (!activeForCandidate.isEmpty()) {
                                         s.getSolutionCode()))
                         .toList()
         );
-    }
-
-    @Override
-    public void changeStatus(Long id, String status) {
-
-        Assessment assessment = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Assessment not found"));
-
-        LocalDateTime now = LocalDateTime.now();
-
-        assessment.setStatus(status);
-        assessment.setUpdatedAt(now);
-
-        if (AssessmentStatus.COMPLETED.name().equalsIgnoreCase(status)) {
-            assessment.setCompletedAt(now);
-        }
-
-        repository.save(assessment);
     }
 
     @Override

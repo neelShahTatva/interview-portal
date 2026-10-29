@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
         if (userId != null) {
 
             return userRepository
-                    .findById(userId)
+                    .findByIdAndIsDeletedFalse(userId)
                     .orElseThrow(() ->
                             new ResourceNotFoundException(
                                     "User not found with username: "
@@ -131,41 +131,54 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
+                .filter(user -> !user.getIsDeleted())
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
     public UserResponse getUserById(Long id) {
-        User user = userRepository.findById(id)
+        User user = userRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return mapToResponse(user);
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("User not found");
+        User user = userRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        user.setIsDeleted(true);
+        user.setUpdatedAt(LocalDateTime.now());
+        try {
+            User currentUser = getCurrentAuthenticatedUser();
+            if (currentUser != null) {
+                user.setUpdatedBy(currentUser.getId());
+            }
+        } catch (Exception ignored) {
+            // Keep existing updatedBy if not in authenticated context
         }
-        userRepository.deleteById(id);
+
+        userRepository.save(user);
     }
 
     // --- Internal Lookups for Security/Other Services ---
 
     @Override
     public User getUserByUserName(String username) {
-        return userRepository.findByUsername(username)
+        return userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
     }
 
     @Override
     public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmailAndIsDeletedFalse(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
     public User login(String email, String password) {
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailAndIsDeletedFalse(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new ResourceNotFoundException("Invalid password");
@@ -193,9 +206,29 @@ public class UserServiceImpl implements UserService {
             Long id,
             UpdateUserRequest request) {
 
-        User user = userRepository.findById(id)
+        User user = userRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("User not found"));
+
+        if (!user.getUsername()
+                .equalsIgnoreCase(request.getUsername())) {
+
+            userValidationService
+                    .validateUsernameAvailableForUpdate(
+                            request.getUsername(),
+                            user.getId()
+                    );
+        }
+
+        if (!user.getEmail()
+                .equalsIgnoreCase(request.getEmail())) {
+
+            userValidationService
+                    .validateEmailAvailableForUpdate(
+                            request.getEmail(),
+                            user.getId()
+                    );
+        }
 
         user.setUsername(request.getUsername());
 

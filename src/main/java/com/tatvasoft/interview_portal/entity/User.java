@@ -20,6 +20,9 @@ public class User {
     private String email;
     private Boolean isActive;
 
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
