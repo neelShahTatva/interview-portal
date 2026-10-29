@@ -672,6 +672,7 @@ public class QuestionServiceImpl implements QuestionService {
 
         if(candidate != null && candidate.getAssessments() != null && !candidate.getAssessments().isEmpty()) {
             boolean hasPending = candidate.getAssessments().stream()
+                    .filter(Assessment::getIsActive)
                     .anyMatch(assessment -> AssessmentStatus.PENDING.name().equals(assessment.getStatus()));
 
             if (hasPending) {
@@ -682,8 +683,9 @@ public class QuestionServiceImpl implements QuestionService {
             }
 
             Assessment latestCompleted = candidate.getAssessments().stream()
-                    .filter(assessment -> AssessmentStatus.COMPLETED.name().equals(assessment.getStatus()))
-                    .filter(assessment -> assessment.getCompletedAt() != null)
+                    .filter(assessment -> assessment.getIsActive()
+                            && AssessmentStatus.COMPLETED.name().equals(assessment.getStatus())
+                            && assessment.getCompletedAt() != null)
                     .max(Comparator.comparing(Assessment::getCompletedAt))
                     .orElse(null);
 
