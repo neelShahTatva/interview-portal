@@ -1,7 +1,7 @@
 package com.tatvasoft.interview_portal.mapper;
 
-import com.tatvasoft.interview_portal.dto.UserRequest;
-import com.tatvasoft.interview_portal.dto.UserResponse;
+import com.tatvasoft.interview_portal.dto.user.UserRequest;
+import com.tatvasoft.interview_portal.dto.user.UserResponse;
 import com.tatvasoft.interview_portal.entity.Role;
 import com.tatvasoft.interview_portal.entity.User;
 import org.mapstruct.Mapper;

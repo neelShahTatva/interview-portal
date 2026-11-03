@@ -1,8 +1,8 @@
 package com.tatvasoft.interview_portal.service;
 
-import com.tatvasoft.interview_portal.dto.AssessmentRequest;
-import com.tatvasoft.interview_portal.dto.AssessmentResponse;
-import com.tatvasoft.interview_portal.dto.CandidateResponse;
+import com.tatvasoft.interview_portal.dto.assessment.AssessmentRequest;
+import com.tatvasoft.interview_portal.dto.assessment.AssessmentResponse;
+import com.tatvasoft.interview_portal.dto.candidate.CandidateResponse;
 
 import java.util.List;
 

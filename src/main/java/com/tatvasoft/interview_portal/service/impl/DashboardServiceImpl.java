@@ -1,6 +1,10 @@
 package com.tatvasoft.interview_portal.service.impl;
 
 import com.tatvasoft.interview_portal.dto.*;
+import com.tatvasoft.interview_portal.dto.ai.AiScoreDistributionDTO;
+import com.tatvasoft.interview_portal.dto.assessment.AssessmentStatusDTO;
+import com.tatvasoft.interview_portal.dto.candidate.CandidatePipelineDTO;
+import com.tatvasoft.interview_portal.dto.question.QuestionDifficultyDTO;
 import com.tatvasoft.interview_portal.repository.DashboardRepository;
 import com.tatvasoft.interview_portal.service.DashboardService;
 import lombok.RequiredArgsConstructor;

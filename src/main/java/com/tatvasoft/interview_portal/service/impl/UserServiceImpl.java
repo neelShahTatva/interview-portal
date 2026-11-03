@@ -1,6 +1,10 @@
 package com.tatvasoft.interview_portal.service.impl;
 
 import com.tatvasoft.interview_portal.dto.*;
+import com.tatvasoft.interview_portal.dto.user.UpdateUserRequest;
+import com.tatvasoft.interview_portal.dto.user.UserProfileResponse;
+import com.tatvasoft.interview_portal.dto.user.UserRequest;
+import com.tatvasoft.interview_portal.dto.user.UserResponse;
 import com.tatvasoft.interview_portal.entity.Role;
 import com.tatvasoft.interview_portal.entity.User;
 import com.tatvasoft.interview_portal.exception.*;

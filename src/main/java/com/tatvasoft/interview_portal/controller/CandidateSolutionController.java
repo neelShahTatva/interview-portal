@@ -2,7 +2,7 @@ package com.tatvasoft.interview_portal.controller;
 
 
 import com.tatvasoft.interview_portal.dto.ApiResponse;
-import com.tatvasoft.interview_portal.dto.CandidateSolutionResponse;
+import com.tatvasoft.interview_portal.dto.candidate.CandidateSolutionResponse;
 import com.tatvasoft.interview_portal.service.CandidateSolutionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

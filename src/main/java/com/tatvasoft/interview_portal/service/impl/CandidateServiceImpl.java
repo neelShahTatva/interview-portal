@@ -1,11 +1,11 @@
 package com.tatvasoft.interview_portal.service.impl;
 
-import com.tatvasoft.interview_portal.ai.dto.MultiQuestionEvaluationResult;
-import com.tatvasoft.interview_portal.ai.dto.QuestionEvaluationResult;
-import com.tatvasoft.interview_portal.dto.CandidateEvaluationResponse;
-import com.tatvasoft.interview_portal.dto.CandidateRequest;
-import com.tatvasoft.interview_portal.dto.CandidateResponse;
-import com.tatvasoft.interview_portal.dto.QuestionUploadDto;
+import com.tatvasoft.interview_portal.dto.ai.MultiQuestionEvaluationResult;
+import com.tatvasoft.interview_portal.dto.ai.QuestionEvaluationResult;
+import com.tatvasoft.interview_portal.dto.candidate.CandidateEvaluationResponse;
+import com.tatvasoft.interview_portal.dto.candidate.CandidateRequest;
+import com.tatvasoft.interview_portal.dto.candidate.CandidateResponse;
+import com.tatvasoft.interview_portal.dto.question.QuestionUploadDto;
 import com.tatvasoft.interview_portal.entity.*;
 import com.tatvasoft.interview_portal.enums.ActionPerformed;
 import com.tatvasoft.interview_portal.exception.ResourceNotFoundException;

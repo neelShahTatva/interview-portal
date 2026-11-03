@@ -1,8 +1,8 @@
 package com.tatvasoft.interview_portal.service;
 
-import com.tatvasoft.interview_portal.dto.CategoryResponse;
-import com.tatvasoft.interview_portal.dto.QuestionRequest;
-import com.tatvasoft.interview_portal.dto.QuestionResponse;
+import com.tatvasoft.interview_portal.dto.category.CategoryResponse;
+import com.tatvasoft.interview_portal.dto.question.QuestionRequest;
+import com.tatvasoft.interview_portal.dto.question.QuestionResponse;
 import com.tatvasoft.interview_portal.entity.Question;
 import org.springframework.web.multipart.MultipartFile;
 

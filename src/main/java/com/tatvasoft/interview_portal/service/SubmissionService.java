@@ -1,7 +1,7 @@
 package com.tatvasoft.interview_portal.service;
 
-import com.tatvasoft.interview_portal.dto.SubmissionRequest;
-import com.tatvasoft.interview_portal.dto.SubmissionResponse;
+import com.tatvasoft.interview_portal.dto.submission.SubmissionRequest;
+import com.tatvasoft.interview_portal.dto.submission.SubmissionResponse;
 
 import java.util.List;
 
