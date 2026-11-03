@@ -1,4 +1,4 @@
-package com.tatvasoft.interview_portal.ai.controller;
+package com.tatvasoft.interview_portal.controller.ai;
 
 import com.tatvasoft.interview_portal.ai.dto.EvaluationResult;
 import com.tatvasoft.interview_portal.ai.dto.FileSubmissionRequest;
