@@ -1,6 +1,10 @@
 package com.tatvasoft.interview_portal.controller;
 
 import com.tatvasoft.interview_portal.dto.*;
+import com.tatvasoft.interview_portal.dto.user.UpdateUserRequest;
+import com.tatvasoft.interview_portal.dto.user.UserProfileResponse;
+import com.tatvasoft.interview_portal.dto.user.UserRequest;
+import com.tatvasoft.interview_portal.dto.user.UserResponse;
 import com.tatvasoft.interview_portal.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

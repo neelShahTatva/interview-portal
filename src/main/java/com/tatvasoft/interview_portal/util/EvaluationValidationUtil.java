@@ -1,7 +1,7 @@
 package com.tatvasoft.interview_portal.util;
 
-import com.tatvasoft.interview_portal.ai.dto.EvaluationResult;
-import com.tatvasoft.interview_portal.ai.dto.FileSubmissionRequest;
+import com.tatvasoft.interview_portal.dto.ai.EvaluationResult;
+import com.tatvasoft.interview_portal.dto.ai.FileSubmissionRequest;
 import org.springframework.stereotype.Component;
 
 @Component

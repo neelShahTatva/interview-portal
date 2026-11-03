@@ -1,6 +1,9 @@
 package com.tatvasoft.interview_portal.controller;
 
-import com.tatvasoft.interview_portal.dto.*;
+import com.tatvasoft.interview_portal.dto.auth.ForgotPasswordRequest;
+import com.tatvasoft.interview_portal.dto.auth.LoginRequest;
+import com.tatvasoft.interview_portal.dto.auth.LoginResponse;
+import com.tatvasoft.interview_portal.dto.auth.ResetPasswordRequest;
 import com.tatvasoft.interview_portal.service.AuthService;
 import com.tatvasoft.interview_portal.service.EmailService;
 import com.tatvasoft.interview_portal.util.JwtUtil;

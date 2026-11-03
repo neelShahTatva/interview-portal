@@ -1,8 +1,8 @@
 package com.tatvasoft.interview_portal.ai.controller;
 
-import com.tatvasoft.interview_portal.ai.dto.EvaluationResult;
-import com.tatvasoft.interview_portal.ai.dto.FileSubmissionRequest;
-import com.tatvasoft.interview_portal.ai.dto.MultiQuestionEvaluationResult;
+import com.tatvasoft.interview_portal.dto.ai.EvaluationResult;
+import com.tatvasoft.interview_portal.dto.ai.FileSubmissionRequest;
+import com.tatvasoft.interview_portal.dto.ai.MultiQuestionEvaluationResult;
 import com.tatvasoft.interview_portal.ai.service.MultiQuestionEvaluationService;
 import com.tatvasoft.interview_portal.ai.service.router.EvaluationRouter;
 import io.swagger.v3.oas.annotations.Operation;

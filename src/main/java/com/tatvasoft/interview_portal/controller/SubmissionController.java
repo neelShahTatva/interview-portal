@@ -1,8 +1,8 @@
 package com.tatvasoft.interview_portal.controller;
 
 import com.tatvasoft.interview_portal.dto.ApiResponse;
-import com.tatvasoft.interview_portal.dto.SubmissionRequest;
-import com.tatvasoft.interview_portal.dto.SubmissionResponse;
+import com.tatvasoft.interview_portal.dto.submission.SubmissionRequest;
+import com.tatvasoft.interview_portal.dto.submission.SubmissionResponse;
 import com.tatvasoft.interview_portal.service.SubmissionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

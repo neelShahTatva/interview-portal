@@ -1,9 +1,9 @@
 package com.tatvasoft.interview_portal.service.impl;
 
-import com.tatvasoft.interview_portal.dto.ForgotPasswordRequest;
-import com.tatvasoft.interview_portal.dto.LoginRequest;
-import com.tatvasoft.interview_portal.dto.LoginResponse;
-import com.tatvasoft.interview_portal.dto.ResetPasswordRequest;
+import com.tatvasoft.interview_portal.dto.auth.ForgotPasswordRequest;
+import com.tatvasoft.interview_portal.dto.auth.LoginRequest;
+import com.tatvasoft.interview_portal.dto.auth.LoginResponse;
+import com.tatvasoft.interview_portal.dto.auth.ResetPasswordRequest;
 import com.tatvasoft.interview_portal.entity.User;
 import com.tatvasoft.interview_portal.exception.AccountInactiveException;
 import com.tatvasoft.interview_portal.exception.InvalidCredentialsException;
