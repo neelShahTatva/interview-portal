@@ -3,6 +3,7 @@ package com.tatvasoft.interview_portal.service.impl;
 import com.tatvasoft.interview_portal.dto.*;
 import com.tatvasoft.interview_portal.entity.*;
 import com.tatvasoft.interview_portal.enums.AssessmentStatus;
+import com.tatvasoft.interview_portal.exception.AssessmentException;
 import com.tatvasoft.interview_portal.repository.*;
 import com.tatvasoft.interview_portal.service.AssessmentService;
 import com.tatvasoft.interview_portal.util.SecurityUtil;
@@ -54,7 +55,8 @@ if (!activeForCandidate.isEmpty()) {
             .anyMatch(a -> AssessmentStatus.PENDING.name().equals(a.getStatus()));
 
     if (hasPending) {
-        throw new RuntimeException(
+        throw new AssessmentException(
+                "ASSESSMENT_PENDING",
                 "Candidate already has a pending assessment."
         );
     }
@@ -125,7 +127,10 @@ if (!activeForCandidate.isEmpty()) {
 
                         message.append(".");
 
-            throw new RuntimeException(message.toString());
+            throw new AssessmentException(
+                    "ASSESSMENT_NOT_ELIGIBLE",
+                    message.toString()
+            );
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.tatvasoft.interview_portal.controller;
+package com.tatvasoft.interview_portal.controller.ai;
 
 import com.tatvasoft.interview_portal.ai.service.AiSolutionGenerationService;
 import com.tatvasoft.interview_portal.entity.QuestionSolution;
