@@ -10,4 +10,6 @@ public interface QuestionsRepository extends JpaRepository<Question, Long> {
     List<Question> findByIdIn(List<Long> ids);
 
     Optional<Question> findByIdAndIsDeletedFalse(Long id);
+
+    List<Question> findByIsDeletedFalse();
 }
