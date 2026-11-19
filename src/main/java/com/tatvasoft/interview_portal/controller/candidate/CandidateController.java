@@ -1,4 +1,4 @@
-package com.tatvasoft.interview_portal.controller;
+package com.tatvasoft.interview_portal.controller.candidate;
 
 import com.tatvasoft.interview_portal.dto.candidate.CandidateEvaluationResponse;
 import com.tatvasoft.interview_portal.dto.candidate.CandidateRequest;
