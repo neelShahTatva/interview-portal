@@ -1,6 +1,6 @@
 package com.tatvasoft.interview_portal.service.impl;
 
-import com.tatvasoft.interview_portal.dto.CandidateSolutionResponse;
+import com.tatvasoft.interview_portal.dto.candidate.CandidateSolutionResponse;
 import com.tatvasoft.interview_portal.entity.CandidateSolution;
 import com.tatvasoft.interview_portal.repository.CandidateSolutionRepository;
 import com.tatvasoft.interview_portal.repository.QuestionsRepository;
