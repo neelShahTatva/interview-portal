@@ -1,7 +1,7 @@
 package com.tatvasoft.interview_portal.ai.service;
 
-import com.tatvasoft.interview_portal.ai.dto.BulkQuestionCandidate;
-import com.tatvasoft.interview_portal.ai.dto.QuestionSimilarityResult;
+import com.tatvasoft.interview_portal.dto.ai.BulkQuestionCandidate;
+import com.tatvasoft.interview_portal.dto.ai.QuestionSimilarityResult;
 import com.tatvasoft.interview_portal.entity.Question;
 
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.tatvasoft.interview_portal.ai.service.router;
 
-import com.tatvasoft.interview_portal.ai.dto.EvaluationResult;
-import com.tatvasoft.interview_portal.ai.dto.FileSubmissionRequest;
+import com.tatvasoft.interview_portal.dto.ai.EvaluationResult;
+import com.tatvasoft.interview_portal.dto.ai.FileSubmissionRequest;
 import com.tatvasoft.interview_portal.ai.service.AiProviderService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

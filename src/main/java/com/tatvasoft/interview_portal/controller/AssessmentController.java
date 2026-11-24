@@ -1,8 +1,8 @@
 package com.tatvasoft.interview_portal.controller;
 
-import com.tatvasoft.interview_portal.dto.AssessmentRequest;
-import com.tatvasoft.interview_portal.dto.AssessmentResponse;
-import com.tatvasoft.interview_portal.dto.CandidateResponse;
+import com.tatvasoft.interview_portal.dto.assessment.AssessmentRequest;
+import com.tatvasoft.interview_portal.dto.assessment.AssessmentResponse;
+import com.tatvasoft.interview_portal.dto.candidate.CandidateResponse;
 import com.tatvasoft.interview_portal.service.AssessmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

@@ -1,11 +1,15 @@
 package com.tatvasoft.interview_portal.service.impl;
 
-import com.tatvasoft.interview_portal.ai.dto.BulkQuestionCandidate;
-import com.tatvasoft.interview_portal.ai.dto.DuplicateQuestionDto;
-import com.tatvasoft.interview_portal.ai.dto.QuestionSimilarityResult;
+import com.tatvasoft.interview_portal.dto.ai.BulkQuestionCandidate;
+import com.tatvasoft.interview_portal.dto.ai.DuplicateQuestionDto;
+import com.tatvasoft.interview_portal.dto.ai.QuestionSimilarityResult;
 import com.tatvasoft.interview_portal.ai.service.AiQuestionSimilarityService;
 import com.tatvasoft.interview_portal.ai.service.QuestionSelectionService;
 import com.tatvasoft.interview_portal.dto.*;
+import com.tatvasoft.interview_portal.dto.category.CategoryDto;
+import com.tatvasoft.interview_portal.dto.category.CategoryResponse;
+import com.tatvasoft.interview_portal.dto.question.QuestionRequest;
+import com.tatvasoft.interview_portal.dto.question.QuestionResponse;
 import com.tatvasoft.interview_portal.entity.*;
 import com.tatvasoft.interview_portal.enums.AssessmentStatus;
 import com.tatvasoft.interview_portal.enums.QuestionDesignationType;
