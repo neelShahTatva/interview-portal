@@ -252,19 +252,25 @@ public class QuestionServiceImpl implements QuestionService {
 
             Sheet sheet = workbook.getSheetAt(0);
 
-            if (sheet.getLastRowNum() < 1) {
+            Row headerRow = sheet.getRow(0);
+            if (headerRow == null || isRowEmpty(headerRow, new DataFormatter())) {
+                throw new BulkUploadValidationException(
+                        "Excel file is missing required columns: Title, Description, Difficulty, Estimated Time, Is Active, Categories, Designations, Java Solution.");
+            }
+            
+            boolean hasData = false;
+            for (Row row : sheet) {
+                if (row.getRowNum() > 0 && !isRowEmpty(row, new DataFormatter())) {
+                    hasData = true;
+                    break;
+                }
+            }
+            
+            if (!hasData) {
                 throw new BulkUploadValidationException("Uploaded file is empty.");
             }
 
-            Row headerRow = sheet.getRow(0);
-            if (headerRow == null) {
-                throw new BulkUploadValidationException("Excel file is missing required columns: Title, Description, Difficulty, Estimated Time, Is Active, Categories, Designations, Java Solution.");
-            }
-
-            // String[] requiredHeaders = QuestionUploadHeader.getRequiredHeaders();
-
             // Build header -> column index map
-
             Map<String, Integer> rawHeaderIndex = new HashMap<>();
             for (int i = 0; i <= headerRow.getLastCellNum(); i++) {
                 Cell cell = headerRow.getCell(i);
@@ -288,14 +294,17 @@ public class QuestionServiceImpl implements QuestionService {
             List<BulkQuestionCandidate> validCandidates = new ArrayList<>();
             Map<Integer, Question> candidateQuestions = new LinkedHashMap<>();
 
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            for (Row row : sheet) {
 
-                Row row = sheet.getRow(i);
-
-                if (row == null) {
+                if (row.getRowNum() == 0) {
                     continue;
                 }
 
+                if (isRowEmpty(row, formatter)) {
+                    continue;
+                }
+                
+                int i = row.getRowNum();
                 int rowNumber = i + 1;
                 int questionNumber = i;
 
@@ -377,10 +386,12 @@ public class QuestionServiceImpl implements QuestionService {
                         if (!trimmed.isEmpty()) {
                             boolean exists = categoryRepository.findByNameIgnoreCase(trimmed).isPresent();
                             if (!exists) {
-                                errors.add(rowPrefix + "Category not found: " + trimmed + ".");
+                                errors.add(rowPrefix + "Category not found: " + trimmed + ". Valid categories are: Arrays, Strings, Dynamic Programming, Trees & Graphs, System Design, Java Core.");
                             }
                         }
                     }
+                } else if (hasCategoryCol) {
+                    errors.add(rowPrefix + "Category is required.");
                 }
 
                 if (hasDesignationCol && !designationCell.isBlank()) {
@@ -511,6 +522,26 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         return uploaded;
+    }
+
+    private boolean isRowEmpty(Row row, DataFormatter formatter) {
+
+        if (row == null) {
+            return true;
+        }
+    
+        for (Cell cell : row) {
+    
+            if (cell != null) {
+                String value = formatter.formatCellValue(cell);
+    
+                if (value != null && !value.trim().isEmpty()) {
+                    return false;
+                }
+            }
+        }
+    
+        return true;
     }
 
     private String getCellValue(Cell cell) {
