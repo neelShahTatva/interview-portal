@@ -1,5 +1,9 @@
 package com.tatvasoft.interview_portal.service.impl;
 
+import com.tatvasoft.interview_portal.dto.ai.BulkQuestionCandidate;
+import com.tatvasoft.interview_portal.dto.ai.DuplicateQuestionDto;
+import com.tatvasoft.interview_portal.dto.ai.QuestionSimilarityResult;
+import com.tatvasoft.interview_portal.ai.service.AiQuestionSimilarityService;
 import com.tatvasoft.interview_portal.ai.service.QuestionSelectionService;
 import com.tatvasoft.interview_portal.dto.*;
 import com.tatvasoft.interview_portal.dto.category.CategoryDto;
@@ -14,10 +18,12 @@ import com.tatvasoft.interview_portal.enums.QuestionUploadHeader;
 import com.tatvasoft.interview_portal.exception.AssessmentException;
 import com.tatvasoft.interview_portal.exception.BulkUploadValidationException;
 import com.tatvasoft.interview_portal.exception.ResourceNotFoundException;
+import com.tatvasoft.interview_portal.exception.globalException.CommonException;
 import com.tatvasoft.interview_portal.repository.*;
 import com.tatvasoft.interview_portal.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,6 +48,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final CategoryRepository categoryRepository;
     private final QuestionDesignationRepository questionDesignationRepository;
     private final QuestionSelectionService questionSelectionService;
+    private final AiQuestionSimilarityService aiQuestionSimilarityService;
     private final UserRepository userRepository;
     private final CandidateRepository candidateRepository;
 
@@ -69,6 +76,9 @@ public class QuestionServiceImpl implements QuestionService {
         String username = SecurityUtil.getCurrentUsername();
         User currentUser = userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new RuntimeException("Logged in user not found"));
+
+        List<Question> existingQuestions = questionRepository.findByIsDeletedFalse();
+        validateQuestionSimilarity(request.getTitle(), request.getDescription(), existingQuestions);
 
         Question q = new Question();
         q.setTitle(request.getTitle());
@@ -118,6 +128,12 @@ public class QuestionServiceImpl implements QuestionService {
 
         Question q = questionRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Question not found"));
+
+        List<Question> existingQuestions = questionRepository.findByIsDeletedFalse()
+                .stream()
+                .filter(existing -> !existing.getId().equals(id))
+                .collect(Collectors.toList());
+        validateQuestionSimilarity(request.getTitle(), request.getDescription(), existingQuestions);
 
         q.setTitle(request.getTitle());
         q.setDescription(request.getDescription());
@@ -236,19 +252,25 @@ public class QuestionServiceImpl implements QuestionService {
 
             Sheet sheet = workbook.getSheetAt(0);
 
-            if (sheet.getLastRowNum() < 1) {
+            Row headerRow = sheet.getRow(0);
+            if (headerRow == null || isRowEmpty(headerRow, new DataFormatter())) {
+                throw new BulkUploadValidationException(
+                        "Excel file is missing required columns: Title, Description, Difficulty, Estimated Time, Is Active, Categories, Designations, Java Solution.");
+            }
+            
+            boolean hasData = false;
+            for (Row row : sheet) {
+                if (row.getRowNum() > 0 && !isRowEmpty(row, new DataFormatter())) {
+                    hasData = true;
+                    break;
+                }
+            }
+            
+            if (!hasData) {
                 throw new BulkUploadValidationException("Uploaded file is empty.");
             }
 
-            Row headerRow = sheet.getRow(0);
-            if (headerRow == null) {
-                throw new BulkUploadValidationException("Excel file is missing required columns: Title, Description, Difficulty, Estimated Time, Is Active, Categories, Designations, Java Solution.");
-            }
-
-            // String[] requiredHeaders = QuestionUploadHeader.getRequiredHeaders();
-
             // Build header -> column index map
-
             Map<String, Integer> rawHeaderIndex = new HashMap<>();
             for (int i = 0; i <= headerRow.getLastCellNum(); i++) {
                 Cell cell = headerRow.getCell(i);
@@ -269,15 +291,22 @@ public class QuestionServiceImpl implements QuestionService {
                 errors.add("Excel file is missing required columns: " + String.join(", ", missingHeaders) + ".");
             }
 
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            List<BulkQuestionCandidate> validCandidates = new ArrayList<>();
+            Map<Integer, Question> candidateQuestions = new LinkedHashMap<>();
 
-                Row row = sheet.getRow(i);
+            for (Row row : sheet) {
 
-                if (row == null) {
+                if (row.getRowNum() == 0) {
                     continue;
                 }
 
+                if (isRowEmpty(row, formatter)) {
+                    continue;
+                }
+                
+                int i = row.getRowNum();
                 int rowNumber = i + 1;
+                int questionNumber = i;
 
                 int titleIndex = getOptionalColumnIndex(columnIndexByHeader, "title");
                 int descriptionIndex = getOptionalColumnIndex(columnIndexByHeader, "description");
@@ -306,37 +335,39 @@ public class QuestionServiceImpl implements QuestionService {
                 String designationCell = safeGetCellValue(row, designationIndex);
                 String javaCode = safeGetCellValue(row, solutionIndex);
 
+                String rowPrefix = "Question " + questionNumber + " (Row " + rowNumber + "): ";
+
                 if (hasTitleCol) {
                     if (title.isBlank()) {
-                        errors.add("Row " + rowNumber + ": Title is required.");
+                        errors.add(rowPrefix + "Title is required.");
                     }
                 }
 
                 if (hasDescriptionCol) {
                     if (description.isBlank()) {
-                        errors.add("Row " + rowNumber + ": Description is required.");
+                        errors.add(rowPrefix + "Description is required.");
                     }
                 }
 
                 if (hasDifficultyCol) {
                     if (difficulty.isBlank()) {
-                        errors.add("Row " + rowNumber + ": Difficulty is required.");
+                        errors.add(rowPrefix + "Difficulty is required.");
                     } else if (!isValidDifficulty(difficulty)) {
-                        errors.add("Row " + rowNumber + ": Difficulty must be EASY, MEDIUM, or HARD.");
+                        errors.add(rowPrefix + "Difficulty must be EASY, MEDIUM, or HARD.");
                     }
                 }
 
                 if (hasEstimatedTimeCol) {
                     if (estimatedTimeText.isBlank()) {
-                        errors.add("Row " + rowNumber + ": Estimated Time is required and must be a positive number.");
+                        errors.add(rowPrefix + "Estimated Time is required and must be a positive number.");
                     } else {
                         try {
                             int estimatedTime = Integer.parseInt(estimatedTimeText.trim());
                             if (estimatedTime <= 0) {
-                                errors.add("Row " + rowNumber + ": Estimated Time is required and must be a positive number.");
+                                errors.add(rowPrefix + "Estimated Time is required and must be a positive number.");
                             }
                         } catch (NumberFormatException e) {
-                            errors.add("Row " + rowNumber + ": Estimated Time is required and must be a positive number.");
+                            errors.add(rowPrefix + "Estimated Time is required and must be a positive number.");
                         }
                     }
                 }
@@ -344,7 +375,7 @@ public class QuestionServiceImpl implements QuestionService {
                 String normalizedIsActive = normalizeBooleanValue(isActiveText);
                 if (hasIsActiveCol) {
                     if (normalizedIsActive == null) {
-                        errors.add("Row " + rowNumber + ": Is Active must be TRUE or FALSE.");
+                        errors.add(rowPrefix + "Is Active must be TRUE or FALSE.");
                     }
                 }
 
@@ -355,10 +386,12 @@ public class QuestionServiceImpl implements QuestionService {
                         if (!trimmed.isEmpty()) {
                             boolean exists = categoryRepository.findByNameIgnoreCase(trimmed).isPresent();
                             if (!exists) {
-                                errors.add("Row " + rowNumber + ": Category not found: " + trimmed + ".");
+                                errors.add(rowPrefix + "Category not found: " + trimmed + ". Valid categories are: Arrays, Strings, Dynamic Programming, Trees & Graphs, System Design, Java Core.");
                             }
                         }
                     }
+                } else if (hasCategoryCol) {
+                    errors.add(rowPrefix + "Category is required.");
                 }
 
                 if (hasDesignationCol && !designationCell.isBlank()) {
@@ -370,22 +403,22 @@ public class QuestionServiceImpl implements QuestionService {
                             .toList();
 
                     if (invalidDesignations.size() > 0) {
-                        errors.add("Row " + rowNumber + ": Invalid designation(s): " + String.join(", ", invalidDesignations)
+                        errors.add(rowPrefix + "Invalid designation(s): " + String.join(", ", invalidDesignations)
                                 + ". Valid designations are: TSE, ASE, SE, SSE, TL, STL, APM, PM, PPM.");
                     }
                 } else if (hasDesignationCol) {
-                    errors.add("Row " + rowNumber + ": Designation is required.");
+                    errors.add(rowPrefix + "Designation is required.");
                 }
 
                 if (hasSolutionCol) {
                     if (javaCode.isBlank()) {
-                        errors.add("Row " + rowNumber + ": Java Solution is required.");
+                        errors.add(rowPrefix + "Java Solution is required.");
                     } else if (javaCode.length() < 5) {
-                        errors.add("Row " + rowNumber + ": Java solution code is invalid or empty.");
+                        errors.add(rowPrefix + "Java solution code is invalid or empty.");
                     }
                 }
 
-                if (errors.size() > 0 && errors.stream().anyMatch(msg -> msg.startsWith("Row " + rowNumber + ":"))) {
+                if (errors.size() > 0 && errors.stream().anyMatch(msg -> msg.startsWith(rowPrefix) || msg.startsWith("Row " + rowNumber + ":"))) {
                     continue;
                 }
 
@@ -404,7 +437,7 @@ public class QuestionServiceImpl implements QuestionService {
                             .filter(name -> !name.isEmpty())
                             .map(name -> categoryRepository.findByNameIgnoreCase(name)
                                     .orElseThrow(() -> new BulkUploadValidationException(
-                                            "Row " + rowNumber + ": Category not found: " + name + ".")))
+                                            rowPrefix + "Category not found: " + name + ".")))
                             .toList();
                     question.setCategories(new HashSet<>(categories));
                 }
@@ -425,7 +458,7 @@ public class QuestionServiceImpl implements QuestionService {
                 }
 
                 String javaValue = getCellValue(row.getCell(solutionIndex));
-                if (StringUtils.isNotBlank(javaValue)   ) {
+                if (StringUtils.isNotBlank(javaValue)) {
                     QuestionSolution solution = new QuestionSolution();
                     solution.setLanguage("JAVA");
                     solution.setSolutionCode(javaValue);
@@ -433,17 +466,55 @@ public class QuestionServiceImpl implements QuestionService {
                     question.setSolutions(List.of(solution));
                 }
 
-                question.setCreatedAt(LocalDateTime.now());
-                questionRepository.save(question);
-                uploaded.add(question);
+                validCandidates.add(BulkQuestionCandidate.builder()
+                        .questionNumber(questionNumber)
+                        .rowNumber(rowNumber)
+                        .title(title)
+                        .description(description)
+                        .build());
+                candidateQuestions.put(questionNumber, question);
+            }
+
+            // Perform similarity check across valid candidate questions and existing DB questions
+            if (!validCandidates.isEmpty()) {
+                List<Question> existingQuestions = questionRepository.findByIsDeletedFalse();
+                Map<Integer, QuestionSimilarityResult> similarityResults =
+                        aiQuestionSimilarityService.checkBulkSimilarity(validCandidates, existingQuestions);
+
+                for (BulkQuestionCandidate candidate : validCandidates) {
+                    QuestionSimilarityResult sim = similarityResults.get(candidate.getQuestionNumber());
+                    if (sim != null && sim.isASimilarQuestion()) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("Question ").append(candidate.getQuestionNumber())
+                                .append(" (Row ").append(candidate.getRowNumber()).append("): ");
+                        if (sim.getReason() != null && !sim.getReason().isBlank()) {
+                            sb.append(sim.getReason());
+                        } else {
+                            sb.append("Question is similar to existing question(s).");
+                        }
+                        errors.add(sb.toString());
+                    }
+                }
             }
 
             if (!errors.isEmpty()) {
                 throw new BulkUploadValidationException(String.join(" | ", errors));
             }
 
+            // Persist valid, non-similar questions
+            for (BulkQuestionCandidate candidate : validCandidates) {
+                Question question = candidateQuestions.get(candidate.getQuestionNumber());
+                if (question != null) {
+                    question.setCreatedAt(LocalDateTime.now());
+                    questionRepository.save(question);
+                    uploaded.add(question);
+                }
+            }
+
         } catch (BulkUploadValidationException ex) {
             log.warn("Bulk upload validation failed: {}", ex.getMessage());
+            throw ex;
+        } catch (CommonException ex) {
             throw ex;
         } catch (Exception ex) {
             log.error("Bulk upload encountered an error", ex);
@@ -451,6 +522,26 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         return uploaded;
+    }
+
+    private boolean isRowEmpty(Row row, DataFormatter formatter) {
+
+        if (row == null) {
+            return true;
+        }
+    
+        for (Cell cell : row) {
+    
+            if (cell != null) {
+                String value = formatter.formatCellValue(cell);
+    
+                if (value != null && !value.trim().isEmpty()) {
+                    return false;
+                }
+            }
+        }
+    
+        return true;
     }
 
     private String getCellValue(Cell cell) {
@@ -829,6 +920,44 @@ public class QuestionServiceImpl implements QuestionService {
 
         if (value != 1) {
             message.append("s");
+        }
+    }
+
+    private void validateQuestionSimilarity(String title, String description, List<Question> existingQuestions) {
+        QuestionSimilarityResult similarityResult;
+        try {
+            similarityResult = aiQuestionSimilarityService.isSimilarQuestion(
+                    title,
+                    description,
+                    existingQuestions
+            );
+        } catch (CommonException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            log.error("AI question similarity service failed or is down: {}", ex.getMessage(), ex);
+            throw new CommonException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "AI question similarity service is currently unavailable. Please try again later."
+            );
+        }
+
+        if (similarityResult != null && similarityResult.isASimilarQuestion()) {
+            List<String> errorMessages = new ArrayList<>();
+            errorMessages.add("Question is similar to existing question(s) in the database.");
+            if (similarityResult.getReason() != null && !similarityResult.getReason().isBlank()) {
+                errorMessages.add("Reason: " + similarityResult.getReason());
+            }
+            if (similarityResult.getDuplicateQuestions() != null && !similarityResult.getDuplicateQuestions().isEmpty()) {
+                for (DuplicateQuestionDto dup : similarityResult.getDuplicateQuestions()) {
+                    String desc = dup.getReason() != null ? dup.getReason() : similarityResult.getReason();
+                    if (desc != null && !desc.isBlank()) {
+                        errorMessages.add(String.format("Similar to question: '%s' - Reason: %s", dup.getTitle(), desc));
+                    } else {
+                        errorMessages.add(String.format("Similar to question: '%s'", dup.getTitle()));
+                    }
+                }
+            }
+            throw new CommonException(HttpStatus.BAD_REQUEST, errorMessages);
         }
     }
 }
